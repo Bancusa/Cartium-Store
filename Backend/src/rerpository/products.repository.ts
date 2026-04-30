@@ -1,12 +1,9 @@
 //DB
 const listaDeProductos = [
-        { id: 1, nombre: "Mouse bueno", precio: 25000 },
-        { id: 2, nombre: "Teclado Mecánico", precio: 45000 },
-        { id: 3, nombre: "Teclado Mecánico", precio: 45000 },
-        { id: 4, nombre: "Teclado Mecánico", precio: 45000 },
-        { id: 5, nombre: "Teclado Mecánico", precio: 45000 },
-        { id: 6, nombre: "Teclado Mecánico", precio: 45000 },
-        { id: 7, nombre: "Teclado Mecánico", precio: 45000 },
+        { id: 1, nombre: "Mancuerna 10kg", precio: 25000 },
+        { id: 2, nombre: "Mancuerna 20kg", precio: 45000 },
+        { id: 3, nombre: "Mancuernas dobles", precio: 100000 },
+      
     ];
 
 
@@ -22,6 +19,6 @@ class ProductRepository {
     update = () => {}
     create = () => {}
 }
-
+//EJEMPLO Y PRUEBA de que todo esta funcionando
 export default new ProductRepository()
 /* module.exports.default = new ProductRepository(); */
