@@ -19,6 +19,5 @@ class ProductRepository {
     update = () => {}
     create = () => {}
 }
-//EJEMPLO Y PRUEBA de que todo esta funcionando
+//PRUEBA FINAL
 export default new ProductRepository()
-/* module.exports.default = new ProductRepository(); */

@@ -18,33 +18,3 @@ class ProductController {
 }
 
 export default new ProductController()
-/* 
-// Ruta de productos: simulamos una pequeña base de datos
-app.get('/getAll', (req: Request, res: Response) => {
-    res.json(listaDeProductos);
-});
-
-app.get('/:id', (req: Request, res: Response) => {
-    const id = req.params.id
-    res.json(listaDeProductos.filter(p => p.id.toString() === id));
-});
-
-app.delete('/delete/:id', (req: Request, res: Response) => {
-    const id = req.params.id
-    const productFiltered = listaDeProductos.filter(p => p.id.toString() !== id)
-    res.json(productFiltered);
-});
- */
-
-
-
-
-
-
-
-
-
-
-// CONTROLLER
-// SERVICE
-// REPOSITORY

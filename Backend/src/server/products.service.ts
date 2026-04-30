@@ -17,4 +17,3 @@ class ProductService {
 
 export default new ProductService()
 
-/* module.exports = new ProductService() */
