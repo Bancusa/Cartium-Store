@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function Carrito() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-gray-900 to-blue-900 text-white font-sans w-full overflow-hidden">
+    <div className="min-h-screen bg-[#0B0C10] text-white font-sans w-full flex flex-col">
       
       {/* NAVBAR */}
       <nav className="flex items-center justify-between px-8 md:px-16 py-6 w-full bg-black/10 backdrop-blur-sm border-b border-white/5">
