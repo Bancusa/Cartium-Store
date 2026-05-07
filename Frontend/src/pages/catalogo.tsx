@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ShoppingCart, User, Home as HomeIcon, LayoutGrid, Filter, ChevronDown, Search, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Filter, ChevronDown, Search, X } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 export default function Catalogo() {
   const [mostrarFiltros, setMostrarFiltros] = useState(true);
@@ -9,28 +9,7 @@ export default function Catalogo() {
     <div className="min-h-screen bg-[#0B0C10] text-white font-sans w-full flex flex-col">
       
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 py-6 w-full bg-[#0B0C10]/90 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#f04e4e] to-[#4e7ef0]"></div>
-          <span className="font-bold text-xl">Cartium Store</span>
-        </div>
-        <div className="hidden md:flex gap-4">
-          <Link to="/" className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-2.5 rounded-full hover:bg-white/10 transition text-sm font-medium">
-            <HomeIcon size={16} /> Inicio
-          </Link>
-          <Link to="/catalogo" className="flex items-center gap-2 bg-[#4e7ef0] px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-blue-500/20">
-            <LayoutGrid size={16} /> Catálogo
-          </Link>
-        </div>
-        <div className="flex gap-6 items-center">
-          <button className="text-gray-300 hover:text-white transition flex items-center gap-2 text-sm font-medium">
-            <User size={16} /> Iniciar Sesión
-          </button>
-          <Link to="/carrito" className="bg-white/5 border border-white/10 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg hover:scale-105 transition-all">
-            <ShoppingCart size={16} /> Carrito
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* CONTENIDO PRINCIPAL */}
       <main className="w-full px-6 md:px-10 pt-36 pb-12 flex flex-col md:flex-row gap-8 flex-1">
@@ -39,7 +18,7 @@ export default function Catalogo() {
         {mostrarFiltros && (
           <aside className="w-full md:w-1/4 lg:w-1/5 shrink-0 flex flex-col gap-8 transition-all duration-300">
             
-            {/* Buscador (ahora arranca directo acá, sin el botón limpiar arriba) */}
+            {/* Buscador */}
             <div className="relative">
               <input 
                 type="text" 
@@ -92,10 +71,10 @@ export default function Catalogo() {
         {/* COLUMNA DERECHA: GRILLA DE PRODUCTOS */}
         <section className="flex-1 w-full transition-all duration-300">
           
-          {/* ENCABEZADO DE LA GRILLA (Dividido en 3 partes iguales para centrar) */}
+          {/* ENCABEZADO DE LA GRILLA */}
           <div className="flex flex-col md:flex-row items-center justify-between mb-8 border-b border-white/10 pb-4 gap-4">
             
-            {/* 1/3 Izquierdo: Botón Filtros */}
+            {/* 1/3 Izquierdo: Boton Filtros */}
             <div className="w-full md:w-1/3 flex justify-start">
               <button 
                 onClick={() => setMostrarFiltros(!mostrarFiltros)}
@@ -110,7 +89,7 @@ export default function Catalogo() {
               </button>
             </div>
 
-            {/* 1/3 Centro: Título */}
+            {/* 1/3 Centro: Titulo */}
             <div className="w-full md:w-1/3 text-center">
               <h1 className="text-3xl font-black mb-1 leading-none">
                 Nuestro <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f04e4e] to-[#4e7ef0]">Catálogo</span>
@@ -128,7 +107,7 @@ export default function Catalogo() {
             </div>
           </div>
           
-          {/* GRILLA (3 por fila máximo en desktop) */}
+          {/* GRILLA (3 por fila en desktop - 1 por telefono) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <div key={item} className="h-80 bg-[#12141A] rounded-2xl border border-white/5 shadow-lg flex flex-col justify-end p-6 relative overflow-hidden group">

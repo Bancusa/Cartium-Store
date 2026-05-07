@@ -1,5 +1,6 @@
-import { type LucideIcon, ShieldCheck, Zap, Leaf, ShoppingCart, User, Home, LayoutGrid } from 'lucide-react';
+import { type LucideIcon, ShieldCheck, Zap, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 interface FeatureProps {
   icon: LucideIcon;
@@ -20,46 +21,22 @@ const FeatureCard = ({ icon: Icon, title, text, color }: FeatureProps) => (
 
 export default function App() {
   return (
-    /* Fondo con degradado oscuro, agregar opcion blanca */
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-gray-900 to-blue-900 text-white selection:bg-blue-500/30 font-sans w-full overflow-hidden">
-      
-      {/* 1. NAVBAR - Estirada al 100% */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 md:px-16 py-6 w-full bg-black/40 backdrop-blur-md border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#f04e4e] to-[#4e7ef0]"></div>
-          <span className="font-bold text-xl">Cartium Store</span>
-        </div>
-        <div className="hidden md:flex gap-4">
-          <Link to="/" className="flex items-center gap-2 bg-[#4e7ef0] px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-blue-500/20">
-            <Home size={16} /> Inicio
-          </Link>
-          <Link to="/catalogo" className="flex items-center gap-2 bg-white/5 border border-white/10 px-6 py-2.5 rounded-full hover:bg-white/10 transition text-sm font-medium">
-            <LayoutGrid size={16} /> Catálogo
-          </Link>
-        </div>
-        
-        <div className="flex gap-6 items-center">
-          {/* boton de inicio de sesion, modificar mas adelante*/}
-          <button className="text-gray-300 hover:text-white transition flex items-center gap-2 text-sm font-medium">
-            <User size={16} /> Iniciar Sesión
-          </button>
-          
-          <Link to="/carrito" className="bg-[#4e7ef0] px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-lg shadow-blue-500/20">
-            <ShoppingCart size={16} /> Carrito
-          </Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#0B0C10] text-white">
+      {/* 1. NAVBAR */}
+      <Navbar />
 
-      {/* 2. HERO SECTION - Pegado a los bordes con un respiro */}
-      <main className="w-full px-8 md:px-16 py-20 flex flex-col md:flex-row items-center justify-between gap-12">
-        <div className="flex-1 text-left">
+      {/* 2. HERO SECTION */}
+      <main className="w-full max-w-7xl mx-auto px-8 md:px-16 pt-32 pb-20 flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
+        
+        {/* Lado Izquierdo: Textos */}
+        <div className="flex-1 text-left flex flex-col items-start">
           
-          {/* Etiqueta "Equipamiento 2026" más grande */}
+          {/* Etiqueta "Equipamiento 2026" */}
           <div className="inline-flex items-center gap-3 border border-white/10 bg-black/20 backdrop-blur-md rounded-full px-6 py-2.5 text-base md:text-lg font-medium text-gray-200 mb-8 shadow-xl">
              <span className="text-blue-400 text-xl">📈</span> Equipamiento 2026
           </div>
           
-          {/* Título más bestia */}
+          {/* Título */}
           <h1 className="text-7xl md:text-9xl font-black leading-tight mb-6 drop-shadow-2xl">
             Entrena <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b6b] to-[#749bff]">
@@ -67,19 +44,22 @@ export default function App() {
             </span>
           </h1>
           
-          {/* Párrafo más grande para acompañar */}
+          {/* Párrafo con mb-10 para separar */}
           <p className="text-gray-300 text-xl md:text-2xl max-w-2xl leading-relaxed mb-10 drop-shadow-md">
             Bienvenido a Cartium Store. El mejor equipamiento profesional para llevar tu rendimiento al siguiente nivel. Descubre nuestra selección premium de productos de gimnasio.
           </p>
           
-          {/* Botón más grandote */}
-          <button className="bg-[#f04e4e] hover:bg-[#d64545] text-white px-12 py-5 rounded-2xl font-black transition-all shadow-2xl shadow-red-500/30 text-xl hover:scale-105">
+          {/* Botón convertido en Link al Catálogo con mt-6 para forzar la separación */}
+          <Link 
+            to="/catalogo" 
+            className="mt-6 inline-block bg-[#f04e4e] hover:bg-[#d64545] text-white px-12 py-5 rounded-2xl font-black transition-all shadow-2xl shadow-red-500/30 text-xl hover:scale-105"
+          >
             Comprar Ahora
-          </button>
+          </Link>
         </div>
 
-        {/* Imagen del Hero con link reparado */}
-        <div className="flex-1 flex justify-end">
+        {/* Lado Derecho: Imagen */}
+        <div className="flex-1 flex justify-center md:justify-center mt-12 md:mt-0">
           <div className="relative">
             <div className="absolute -inset-2 bg-gradient-to-br from-[#f04e4e] to-[#4e7ef0] rounded-[32px] blur-3xl opacity-30"></div>
             <img 
@@ -91,7 +71,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* 3. SECCIÓN BENEFICIOS */}
+      {/* 3. SECCION BENEFICIOS */}
       <section className="w-full px-8 md:px-16 py-32 bg-black/10 border-t border-white/5 backdrop-blur-sm">
         <div className="text-center mb-20">
           <h2 className="text-5xl font-black mb-4 drop-shadow-lg">¿Por Qué Elegirnos?</h2>
@@ -119,7 +99,7 @@ export default function App() {
           />
         </div>
 
-        {/* 4. BANNER CTA - Acomodado con más espacio y el Link funcional */}
+        {/* 4. BANNER CTA */}
         <div className="relative rounded-3xl py-20 px-10 md:px-16 text-center overflow-hidden border border-white/20 shadow-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 via-black/50 to-blue-600/20 opacity-90"></div>
           <div className="relative z-10 flex flex-col items-center gap-10">
