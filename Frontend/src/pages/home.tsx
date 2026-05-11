@@ -36,7 +36,7 @@ export default function App() {
              <span className="text-blue-400 text-xl">📈</span> Equipamiento 2026
           </div>
           
-          {/* Título */}
+          {/* Titulo */}
           <h1 className="text-7xl md:text-9xl font-black leading-tight mb-6 drop-shadow-2xl">
             Entrena <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b6b] to-[#749bff]">
@@ -44,12 +44,12 @@ export default function App() {
             </span>
           </h1>
           
-          {/* Párrafo con mb-10 para separar */}
+          {/* Parrafo */}
           <p className="text-gray-300 text-xl md:text-2xl max-w-2xl leading-relaxed mb-10 drop-shadow-md">
             Bienvenido a Cartium Store. El mejor equipamiento profesional para llevar tu rendimiento al siguiente nivel. Descubre nuestra selección premium de productos de gimnasio.
           </p>
           
-          {/* Botón convertido en Link al Catálogo con mt-6 para forzar la separación */}
+          {/* Boton convertido en Link al Catalogo */}
           <Link 
             to="/catalogo" 
             className="mt-6 inline-block bg-[#f04e4e] hover:bg-[#d64545] text-white px-12 py-5 rounded-2xl font-black transition-all shadow-2xl shadow-red-500/30 text-xl hover:scale-105"
