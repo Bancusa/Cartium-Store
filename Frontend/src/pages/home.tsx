@@ -1,6 +1,9 @@
 import { type LucideIcon, ShieldCheck, Zap, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Chatbot from '../components/Chatbot';
+import logo from '../assets/logo.png';
+/* import principal from '../assets/mancuernas.png'*/
 
 interface FeatureProps {
   icon: LucideIcon;
@@ -63,8 +66,8 @@ export default function App() {
           <div className="relative">
             <div className="absolute -inset-2 bg-gradient-to-br from-[#f04e4e] to-[#4e7ef0] rounded-[32px] blur-3xl opacity-30"></div>
             <img 
-              src="" 
-              alt="Mancuernas" 
+              src=""
+              alt="Foto Principal" 
               className="relative rounded-[24px] w-[450px] h-[600px] object-cover border border-white/20 shadow-2xl"
             />
           </div>
@@ -118,55 +121,56 @@ export default function App() {
       </section>
 
       {/* 5. FOOTER */}
-      <footer className="bg-black/40 pt-20 pb-10 border-t border-white/10 w-full backdrop-blur-md">
-        <div className="w-full px-8 md:px-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 text-left">
-            <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#f04e4e] to-[#4e7ef0]"></div>
-                <span className="font-bold text-xl">Cartium Store</span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Equipamiento profesional para alcanzar tus metas.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-bold mb-6 text-white uppercase text-sm tracking-widest">Productos</h4>
-              <ul className="space-y-4 text-gray-400 text-sm">
-                <li className="hover:text-white cursor-pointer transition">Pesas</li>
-                <li className="hover:text-white cursor-pointer transition">Barras</li>
-                <li className="hover:text-white cursor-pointer transition">Mancuernas</li>
-                <li className="hover:text-white cursor-pointer transition">Accesorios</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 text-white uppercase text-sm tracking-widest">Compañía</h4>
-              <ul className="space-y-4 text-gray-400 text-sm">
-                <li className="hover:text-white cursor-pointer transition">Sobre Nosotros</li>
-                <li className="hover:text-white cursor-pointer transition">Contacto</li>
-                <li className="hover:text-white cursor-pointer transition">Soporte</li>
-                <li className="hover:text-white cursor-pointer transition">FAQ</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6 text-white uppercase text-sm tracking-widest">Legal</h4>
-              <ul className="space-y-4 text-gray-400 text-sm">
-                <li className="hover:text-white cursor-pointer transition">Privacidad</li>
-                <li className="hover:text-white cursor-pointer transition">Términos</li>
-                <li className="hover:text-white cursor-pointer transition">Envíos</li>
-                <li className="hover:text-white cursor-pointer transition">Devoluciones</li>
-              </ul>
-            </div>
-          </div>
+      <footer className="w-full border-t border-white/10 pt-16 pb-8 px-6 mt-auto">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
           
-          <div className="pt-8 border-t border-white/10 text-center text-gray-500 text-xs">
-            © 2026 Cartium Store. Todos los derechos reservados.
+          {/* Columna 1: Logo nuevo y descripción */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <img 
+                src={logo} 
+                alt="Logo Cartium Store" 
+                className="w-10 h-10 rounded-xl object-cover" 
+              />
+              <span className="text-xl font-black tracking-wide">Cartium Store</span>
+            </div>
+            <p className="text-gray-400 text-sm mt-2">
+              Equipamiento profesional para alcanzar tus metas.
+            </p>
           </div>
+
+          {/* Columna 2: COMPAÑÍA */}
+          <div>
+            <h3 className="font-bold mb-6 tracking-wider text-sm uppercase">Compañía</h3>
+            <ul className="flex flex-col gap-4 text-gray-400 text-sm">
+              <li className="hover:text-white cursor-pointer transition">Sobre Nosotros</li>
+              <li className="hover:text-white cursor-pointer transition">Contacto</li>
+              <li className="hover:text-white cursor-pointer transition">Soporte</li>
+              <li className="hover:text-white cursor-pointer transition">FAQ</li>
+            </ul>
+          </div>
+
+          {/* Columna 3: LEGAL */}
+          <div>
+            <h3 className="font-bold mb-6 tracking-wider text-sm uppercase">Legal</h3>
+            <ul className="flex flex-col gap-4 text-gray-400 text-sm">
+              <li className="hover:text-white cursor-pointer transition">Privacidad</li>
+              <li className="hover:text-white cursor-pointer transition">Términos</li>
+              <li className="hover:text-white cursor-pointer transition">Envíos</li>
+              <li className="hover:text-white cursor-pointer transition">Devoluciones</li>
+            </ul>
+          </div>
+
         </div>
-      </footer>
+
+        {/* Copyright */}
+        <div className="pt-8 border-t border-white/10 text-center text-gray-500 text-xs">
+          © 2026 Cartium Store. Todos los derechos reservados.
+        </div>
+      </div>
+    </footer>
+      <Chatbot />
     </div>
   );
 }

@@ -1,12 +1,20 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, User, Home, LayoutGrid } from 'lucide-react';
+import logo from '../assets/logo.png'; // Cambiá .png por la extensión que tenga tu foto
 
 export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 md:px-16 py-6 w-full bg-[#0B0C10]/80 backdrop-blur-md border-b border-white/5">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#f04e4e] to-[#4e7ef0]"></div>
-        <span className="font-bold text-xl text-white">Cartium Store</span>
+        {/* LOGO */}
+        <Link to="/" className="flex items-center gap-3 group">
+          <img 
+            src={logo} 
+            alt="Logo Cartium Store" 
+            className="w-10 h-10 rounded-xl object-cover group-hover:scale-105 transition-all" 
+          />
+          <span className="text-xl font-black tracking-wide">Cartium Store</span>
+        </Link>
       </div>
       
       <div className="hidden md:flex gap-4">

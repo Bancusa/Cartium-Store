@@ -1,5 +1,6 @@
 import { ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Chatbot from '../components/Chatbot';
 import Navbar from '../components/Navbar';
 
 export default function Carrito() {
@@ -31,6 +32,7 @@ export default function Carrito() {
 
         </div>
       </main>
+      <Chatbot />
     </div>
   );
 }

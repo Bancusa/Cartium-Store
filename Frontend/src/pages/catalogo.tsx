@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Search } from 'lucide-react';
+import Chatbot from '../components/Chatbot';
 import Navbar from '../components/Navbar';
 
 interface Producto {
@@ -88,6 +89,7 @@ export default function Catalogo() {
           </div>
         )}
       </main>
+      <Chatbot />
     </div>
   );
 }
