@@ -52,7 +52,7 @@ export default function App() {
             Bienvenido a Cartium Store. El mejor equipamiento profesional para llevar tu rendimiento al siguiente nivel. Descubre nuestra selección premium de productos de gimnasio.
           </p>
           
-          {/* Boton convertido en Link al Catalogo */}
+          {/* Boton al Catalogo */}
           <Link 
             to="/catalogo" 
             className="mt-6 inline-block bg-[#f04e4e] hover:bg-[#d64545] text-white px-12 py-5 rounded-2xl font-black transition-all shadow-2xl shadow-red-500/30 text-xl hover:scale-105"
