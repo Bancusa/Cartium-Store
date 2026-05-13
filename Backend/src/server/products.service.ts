@@ -1,19 +1,19 @@
-import productRepository from "../rerpository/products.repository.js"
-
-
+import productRepository from "../repository/products.repository.js"; 
 
 class ProductService {
-
+    
     getAllServiceProducts() {
-        /* DB */
-        return productRepository.getAll()
+        return productRepository.getAll();
     }
-    deleteServiceProducts = () =>{}
-    updateServiceProducts = () =>{}
-    createServiceProducts = () =>{}
-    getByIdServiceProducts = () =>{}
 
+    
+    createServiceProducts = async (productoNuevo: any) => {
+        return await productRepository.create(productoNuevo);
+    }
+
+    deleteServiceProducts = () => {}
+    updateServiceProducts = () => {}
+    getByIdServiceProducts = () => {}
 }
 
-export default new ProductService()
-
+export default new ProductService();
