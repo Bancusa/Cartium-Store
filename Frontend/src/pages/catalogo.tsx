@@ -15,10 +15,10 @@ export default function Catalogo() {
 
   useEffect(() => {
     // URL del backend
-    fetch('http://localhost:4000/products') 
+    fetch('http://localhost:4000/products/getAll') 
       .then((respuesta) => {
         if (!respuesta.ok) {
-          throw new Error('El servidor tiró un error');
+          throw new Error('El servidor tiro un error');
         }
         return respuesta.json();
       })
@@ -27,7 +27,7 @@ export default function Catalogo() {
         setCargando(false);
       })
       .catch((error) => {
-        console.error("Ups, falló la conexión con el servidor:", error);
+        console.error("Fallo la conexión con el servidor:", error);
         setCargando(false);
       });
   }, []);
