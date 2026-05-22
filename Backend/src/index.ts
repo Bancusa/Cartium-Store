@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import productsRouter  from './routes/products.routes.js';
+import usersRoutes from './routes/users.routes.js';
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use("/products", productsRouter)
-
+app.use('/api/usuarios', usersRoutes);
 
 
 
