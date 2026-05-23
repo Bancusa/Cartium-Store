@@ -29,7 +29,7 @@ export default function App() {
       <Navbar />
 
       {/* 2 hero section */}
-      <main className="w-full max-w-7xl mx-auto px-8 md:px-16 pt-32 pb-20 flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
+      <main className="w-full w-[95%] mx-auto px-8 md:px-16 pt-32 pb-20 flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20">
         
         {/* lado izquierdo textos */}
         <div className="flex-1 text-left flex flex-col items-start">
