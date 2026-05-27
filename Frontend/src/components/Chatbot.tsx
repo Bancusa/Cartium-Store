@@ -27,7 +27,6 @@ export default function Chatbot() {
     setChatLog(nuevosMensajes);
     setInputMensaje('');
     setCargando(true);
-    /*  */
     
     try {
       const respuesta = await fetch(N8N_WEBHOOK_URL, {
