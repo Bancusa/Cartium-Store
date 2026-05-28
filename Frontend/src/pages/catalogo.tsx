@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../context/CartContext'
 import Navbar from '../components/Navbar'
+import Chatbot from '../components/Chatbot';
 
 // interfaz para el producto de la base de datos
 interface ProductoDB {
@@ -247,6 +248,7 @@ const Catalogo = () => {
 
         </div>
       </div>
+      <Chatbot />
     </>
   )
 }

@@ -16,7 +16,7 @@ export default function Chatbot() {
     { rol: 'bot', texto: '¡Hola! Soy el asistente virtual de Cartium Store. ¿En qué te puedo ayudar?' }
   ]);
   
-  const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/260b69f3-4452-4f8f-a395-1520f92ec5d7';
+  const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/260b69f3-4452-4f8f-a395-1520f92ec5d7';
   
   const enviarMensaje = async () => {
     if (!inputMensaje.trim()) return;
@@ -27,7 +27,7 @@ export default function Chatbot() {
     setChatLog(nuevosMensajes);
     setInputMensaje('');
     setCargando(true);
-    
+
     try {
       const respuesta = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
@@ -35,19 +35,26 @@ export default function Chatbot() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ mensaje: inputMensaje }) 
-      });
+      })
 
-      if (!respuesta.ok) throw new Error('Error en n8n');
+      if (!respuesta.ok) throw new Error('Error en n8n')
       
-      const data = await respuesta.json();
-      const msjBot: Mensaje = { rol: 'bot', texto: data.respuesta || 'Mensaje recibido pero sin respuesta configurada' };
-      setChatLog([...nuevosMensajes, msjBot]);
+      const data = await respuesta.json()
+      
+      // mostrar respuesta de n8n en consola del navegador para verificar estructura
+      console.log("Data cruda de n8n:", data)
+      
+      // buscar texto en posibles variables por defecto
+      const textoBot = data.text || data.output || data.respuesta || data[0]?.text || 'Llego el paquete pero no encuentro el texto de la IA'
+      
+      const msjBot: Mensaje = { rol: 'bot', texto: textoBot }
+      setChatLog([...nuevosMensajes, msjBot])
     } catch (error) {
-      console.error("Fallo la conexion con n8n:", error);
-      const msjError: Mensaje = { rol: 'bot', texto: 'Ha ocurrido un error. Intenta de nuevo en un rato' };
-      setChatLog([...nuevosMensajes, msjError]);
+      console.error("Fallo la conexion con n8n:", error)
+      const msjError: Mensaje = { rol: 'bot', texto: 'Ha ocurrido un error. Intenta de nuevo en un rato' }
+      setChatLog([...nuevosMensajes, msjError])
     } finally {
-      setCargando(false);
+      setCargando(false)
     }
   };
 

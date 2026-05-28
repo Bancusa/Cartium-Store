@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
+import Chatbot from '../components/Chatbot';
 
 export default function Auth() {
   const [esLogin, setEsLogin] = useState(true);
@@ -91,6 +92,7 @@ export default function Auth() {
           </div>
         </div>
       </main>
+      <Chatbot />
     </div>
   );
 }
