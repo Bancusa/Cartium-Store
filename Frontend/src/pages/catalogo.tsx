@@ -31,11 +31,19 @@ const Catalogo = () => {
   useEffect(() => {
     const obtenerProductos = async () => {
       try {
-        const respuesta = await fetch('http://localhost:4000/products/getAll')
+        // le pegamos directo al backend sin pasar por el proxy de vite
+        const respuesta = await fetch('/api/productos/getAll')
         const datos = await respuesta.json()
-        setProductos(datos)
+        
+        if (Array.isArray(datos)) {
+          setProductos(datos)
+        } else {
+          console.error('El backend contesto pero no es un array:', datos)
+          setProductos([])
+        }
       } catch (error) {
         console.error('error al cargar los productos', error)
+        setProductos([])
       } finally {
         setCargando(false)
       }

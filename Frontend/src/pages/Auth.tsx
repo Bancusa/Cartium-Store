@@ -12,14 +12,11 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // esta funcion se dispara cuando tocan el boton de iniciar o registrar
   const manejarEnvio = async (e: React.FormEvent) => {
-    e.preventDefault(); // evitamos que la pagina se recargue al tocar el boton
+    e.preventDefault(); 
     
-    // elegimos la ruta correcta gracias al proxy de vite
     const endpoint = esLogin ? '/api/usuarios/login' : '/api/usuarios/register';
     
-    // preparamos el paquete de datos segun la pantalla
     const datosUsuario = esLogin 
       ? { email, password } 
       : { nombre, email, password };
@@ -35,10 +32,10 @@ export default function Auth() {
       const data = await respuesta.json();
       
       if (respuesta.ok) {
-        console.log("salio todo de diez", data);
-        // aca despues le metes la logica para redirigir a la tienda
+        console.log("Funciono 🗿", data);
+        // aca logica de redireccion
       } else {
-        console.error("el backend rechazo la jugada", data);
+        console.error("El backend fallo", data);
       }
       
     } catch (error) {

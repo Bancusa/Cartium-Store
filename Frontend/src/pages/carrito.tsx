@@ -11,6 +11,37 @@ const Carrito = () => {
   // calculamos el total sumando los precios de los productos
   const total = carrito.reduce((acumulador, item) => acumulador + Number(item.precio), 0)
 
+  // funcion para mandar los fierros a la pasarela de pagos
+  const procesarPago = async () => {
+    try {
+      // buscamos el token de sesion guardado en el navegador
+      const token = localStorage.getItem('tokenUsuario') // o como lo hayas nombrado al guardar
+
+      const itemsMP = carrito.map(item => ({
+        title: item.nombre,
+        unit_price: Number(item.precio),
+        quantity: 1 
+      }))
+
+      const respuesta = await fetch('/api/pagos/create_preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: itemsMP })
+      })
+
+      const data = await respuesta.json()
+
+      if (data.init_point) {
+        window.location.href = data.init_point
+      } else {
+        console.error("No se recibio el init_point del servidor", data)
+      }
+
+    } catch (error) {
+      console.error("Error al conectar con la pasarela de pagos:", error)
+    }
+  }
+
   return (
     <>
       <Navbar />
@@ -72,8 +103,11 @@ const Carrito = () => {
                   Seguir comprando
                 </Link>
 
-                {/* boton normal provisorio hasta conectar la pasarela de pagos */}
-                <button className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 w-full sm:w-auto">
+                {/* boton conectado a la pasarela de pagos real */}
+                <button 
+                  onClick={procesarPago}
+                  className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 w-full sm:w-auto"
+                >
                   Proceder al pago
                 </button>
               </div>
