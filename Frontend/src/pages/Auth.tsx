@@ -6,16 +6,53 @@ import Chatbot from '../components/Chatbot';
 
 export default function Auth() {
   const [esLogin, setEsLogin] = useState(true);
+  
+  // variables para guardar lo que escribe el usuario en tiempo real
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // esta funcion se dispara cuando tocan el boton de iniciar o registrar
+  const manejarEnvio = async (e: React.FormEvent) => {
+    e.preventDefault(); // evitamos que la pagina se recargue al tocar el boton
+    
+    // elegimos la ruta correcta gracias al proxy de vite
+    const endpoint = esLogin ? '/api/usuarios/login' : '/api/usuarios/register';
+    
+    // preparamos el paquete de datos segun la pantalla
+    const datosUsuario = esLogin 
+      ? { email, password } 
+      : { nombre, email, password };
+
+    try {
+      // le pegamos directo a la ruta relativa
+      const respuesta = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datosUsuario)
+      });
+
+      const data = await respuesta.json();
+      
+      if (respuesta.ok) {
+        console.log("salio todo de diez", data);
+        // aca despues le metes la logica para redirigir a la tienda
+      } else {
+        console.error("el backend rechazo la jugada", data);
+      }
+      
+    } catch (error) {
+      console.error("fallo la conexion al servidor", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0B0C10] text-gray-900 dark:text-white font-sans w-full flex flex-col transition-colors duration-300">
       <Navbar />
 
       <main className="flex-1 flex items-center justify-center px-6 pt-20">
-        {/* tarjeta de auth con glassmorphism */}
         <div className="w-full max-w-md bg-white dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 p-10 rounded-[32px] shadow-2xl relative overflow-hidden transition-colors duration-300">
           
-          {/* luces de fondo sutiles */}
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#f04e4e]/20 rounded-full blur-[80px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[#4e7ef0]/20 rounded-full blur-[80px]"></div>
 
@@ -31,14 +68,16 @@ export default function Auth() {
               </p>
             </div>
 
-            {/* aca esta la magia le clave un mb 12 margin bottom enorme al form para que empuje lo de abajo */}
-            <form className="flex flex-col gap-5 mb-12">
+            {/* aca conectamos la funcion al formulario entero */}
+            <form onSubmit={manejarEnvio} className="flex flex-col gap-5 mb-12">
               {!esLogin && (
                 <div className="relative">
                   <User className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
                   <input 
                     type="text" 
                     placeholder="Nombre completo" 
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
                     className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                   />
                 </div>
@@ -49,36 +88,39 @@ export default function Auth() {
                 <input 
                   type="email" 
                   placeholder="Email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                 />
               </div>
 
-            <div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
-                />
-              </div>
-  
-              {/* el link solo aparece si eslogin es verdadero */}
-              {esLogin && (
-                <div className="flex justify-end mt-2 mr-1">
-                  <Link to="/recuperar-clave" className="text-xs text-gray-500 dark:text-gray-400 hover:text-[#4e7ef0] transition-colors">
-                    ¿Olvidaste tu contraseña?
-                  </Link>
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-3.5 text-gray-400 dark:text-gray-500" size={18} />
+                  <input
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                  />
                 </div>
-              )}
+    
+                {esLogin && (
+                  <div className="flex justify-end mt-2 mr-1">
+                    <Link to="/recuperar-clave" className="text-xs text-gray-500 dark:text-gray-400 hover:text-[#4e7ef0] transition-colors">
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
+                )}
               </div>
 
-              <button className="w-full bg-[#4e7ef0] hover:bg-blue-600 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 mt-2 hover:scale-[1.02] active:scale-95">
+              {/* el boton de tipo submit hace que se dispare el manejarEnvio */}
+              <button type="submit" className="w-full bg-[#4e7ef0] hover:bg-blue-600 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 mt-2 hover:scale-[1.02] active:scale-95">
                 {esLogin ? 'Iniciar Sesión' : 'Registrarse'} <ArrowRight size={18} />
               </button>
             </form>
 
-            {/* texto para alternar */}
             <p className="text-center text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">
               {esLogin ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?'} {' '}
               <button 
