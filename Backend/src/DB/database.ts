@@ -5,7 +5,7 @@ export async function conectarDB() {
         host: 'localhost',
         user: 'root',
         password: '',
-        database: 'ecommerce_db'
+        database: 'cartium_db'
     });
 
 
