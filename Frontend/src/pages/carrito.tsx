@@ -15,7 +15,7 @@ const Carrito = () => {
   const procesarPago = async () => {
     try {
       // buscamos el token de sesion guardado en el navegador
-      const token = localStorage.getItem('tokenUsuario') // o como lo hayas nombrado al guardar
+      // const token = localStorage.getItem('tokenUsuario') // o como lo hayas nombrado al guardar
 
       const itemsMP = carrito.map(item => ({
         title: item.nombre,

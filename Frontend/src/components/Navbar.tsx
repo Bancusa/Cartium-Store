@@ -10,8 +10,20 @@ const Navbar = () => {
   const context = useContext(CartContext)
   const cantidad = context?.cantidadTotal || 0
 
+  // estado para guardar el nombre del usuario logueado
+  const [nombreUsuario] = useState<string | null>(() => {
+    const nombre = localStorage.getItem('nombreUsuario')
+    return nombre ? nombre.split(' ')[0] : null
+  })
+
+  // funcion para matar la sesion
+  const cerrarSesion = () => {
+    localStorage.removeItem('nombreUsuario')
+    localStorage.removeItem('tokenUsuario')
+    window.location.href = '/' // lo mandamos al inicio limpio
+  }
+
   return (
-    // contenedor principal
     <nav className="bg-white dark:bg-[#0f0f11] text-gray-900 dark:text-white p-4 border-b border-gray-200 dark:border-white/5 sticky top-0 z-50 transition-colors duration-300">
       
       <div className="flex justify-between items-center w-[95%] mx-auto relative">
@@ -44,20 +56,39 @@ const Navbar = () => {
             {cantidad > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full animate-bounce">{cantidad}</span>}
           </Link>
           
-          <Link 
-            to="/login" 
-            onClick={() => localStorage.setItem('ultimaRuta', window.location.pathname)}
-            className="text-sm font-bold opacity-70 hover:opacity-100 transition-opacity"
-          >
-            Iniciar Sesion
-          </Link>
+          {/* logica para escritorio si esta logueado o no */}
+          {nombreUsuario ? (
+            <div className="flex items-center gap-3 border-l border-gray-200 dark:border-white/10 pl-4 ml-2">
+              {/* enlace del perfil para la version de computadora */}
+              <Link 
+                to="/perfil"
+                className="text-sm font-bold opacity-90 hover:opacity-100 text-gray-900 dark:text-white hover:text-[#5c8aff] dark:hover:text-[#5c8aff] transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                Hola <span className="text-[#5c8aff]">{nombreUsuario}</span>
+              </Link>
+              <button 
+                onClick={cerrarSesion}
+                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg"
+              >
+                Salir
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              onClick={() => localStorage.setItem('ultimaRuta', window.location.pathname)}
+              className="text-sm font-bold opacity-70 hover:opacity-100 transition-opacity"
+            >
+              Iniciar Sesion
+            </Link>
+          )}
         </div>
 
         {/* celular */}
         <div className="md:hidden flex items-center gap-2">
           <button onClick={toggleTheme} className="p-2">{theme === 'dark' ? '☀️' : '🌙'}</button>
           <button onClick={() => setAbierto(!abierto)}>
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" strokeWidth={2} /></svg>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
         </div>
       </div>
@@ -71,16 +102,31 @@ const Navbar = () => {
             {cantidad > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{cantidad}</span>}
           </Link>
           
-          <Link 
-            to="/login" 
-            onClick={() => {
-              setAbierto(false)
-              localStorage.setItem('ultimaRuta', window.location.pathname)
-            }} 
-            className="text-lg font-bold tracking-wide opacity-70 mt-2"
-          >
-            Iniciar Sesion
-          </Link>
+          {/* logica para celular si esta logueado o no */}
+          {nombreUsuario ? (
+            <div className="flex flex-col items-center gap-4 mt-2 w-full px-6">
+              <span className="text-lg font-bold tracking-wide border-t border-gray-200 dark:border-white/10 pt-6 w-full text-center">
+                Hola <span className="text-[#5c8aff]">{nombreUsuario}</span>
+              </span>
+              <button 
+                onClick={cerrarSesion}
+                className="text-md font-bold text-red-500 tracking-wide"
+              >
+                Cerrar Sesion
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              onClick={() => {
+                setAbierto(false)
+                localStorage.setItem('ultimaRuta', window.location.pathname)
+              }} 
+              className="text-lg font-bold tracking-wide opacity-70 mt-2"
+            >
+              Iniciar Sesion
+            </Link>
+          )}
         </div>
       )}
       
