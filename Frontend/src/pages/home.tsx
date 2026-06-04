@@ -120,14 +120,13 @@ export default function App() {
         </div>
       </section>
 
-      {/* 5 footer */}
+    {/* 5 footer */}
       <footer className="w-full border-t border-gray-200 dark:border-white/10 pt-16 pb-8 px-6 mt-auto transition-colors duration-300">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+        <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center">
           
           {/* columna 1 logo nuevo y descripcion */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-4 mb-12">
+            <div className="flex items-center gap-3 justify-center">
               <img 
                 src={logo} 
                 alt="Logo Cartium Store" 
@@ -135,41 +134,18 @@ export default function App() {
               />
               <span className="text-xl font-black tracking-wide">Cartium Store</span>
             </div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 transition-colors duration-300">
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm transition-colors duration-300">
               Equipamiento profesional para alcanzar tus metas.
             </p>
           </div>
 
-          {/* columna 2 compania */}
-          <div>
-            <h3 className="font-bold mb-6 tracking-wider text-sm uppercase">Compañía</h3>
-            <ul className="flex flex-col gap-4 text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Sobre Nosotros</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Contacto</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Soporte</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">FAQ</li>
-            </ul>
+          {/* copyright */}
+          <div className="w-full pt-8 border-t border-gray-200 dark:border-white/10 text-center text-gray-400 dark:text-gray-500 text-xs transition-colors duration-300">
+            © 2026 Cartium Store. Todos los derechos reservados.
           </div>
-
-          {/* columna 3 legal */}
-          <div>
-            <h3 className="font-bold mb-6 tracking-wider text-sm uppercase">Legal</h3>
-            <ul className="flex flex-col gap-4 text-gray-500 dark:text-gray-400 text-sm transition-colors duration-300">
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Privacidad</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Términos</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Envíos</li>
-              <li className="hover:text-gray-900 dark:hover:text-white cursor-pointer transition">Devoluciones</li>
-            </ul>
-          </div>
-
+          
         </div>
-
-        {/* copyright */}
-        <div className="pt-8 border-t border-gray-200 dark:border-white/10 text-center text-gray-400 dark:text-gray-500 text-xs transition-colors duration-300">
-          © 2026 Cartium Store. Todos los derechos reservados.
-        </div>
-      </div>
-    </footer>
+      </footer>
       <Chatbot />
     </div>
   );
