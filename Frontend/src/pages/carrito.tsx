@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { CartContext } from '../context/CartContext'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
@@ -11,8 +11,31 @@ const Carrito = () => {
   // calculamos el total sumando los precios de los productos
   const total = carrito.reduce((acumulador, item) => acumulador + Number(item.precio), 0)
 
+  // estados locales para capturar los datos de facturacion del cliente
+  const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
+  const [dni, setDni] = useState('')
+  const [direccion, setDireccion] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  
+  // estado nuevo para controlar la visibilidad de la contraseña
+  const [verPassword, setVerPassword] = useState(false)
+
   // funcion para mandar los fierros a la pasarela de pagos
   const procesarPago = async () => {
+    if (!mostrarFormulario) {
+      setMostrarFormulario(true)
+      return
+    }
+
+    // validacion basica para evitar campos vacios incluyendo el nuevo campo
+    if (!nombre || !apellido || !dni || !direccion || !email || !password) {
+      alert('Por favor, completa todos tus datos de registro antes de continuar al pago.')
+      return
+    }
+
     try {
       const itemsMP = carrito.map(item => ({
         title: item.nombre,
@@ -20,17 +43,19 @@ const Carrito = () => {
         quantity: 1 
       }))
 
-      // pegamos directo al puerto cuatro mil del backend de express
+      // despachamos los productos junto con los datos del comprador recopilados con la clave
       const respuesta = await fetch('http://localhost:4000/api/pagos/create_preference', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: itemsMP })
+        body: JSON.stringify({ 
+          items: itemsMP,
+          comprador: { nombre, apellido, dni, direccion, email, password }
+        })
       })
 
       const data = await respuesta.json()
 
       if (data.init_point) {
-        // redirigir al usuario al entorno de pruebas de mercado pago
         window.location.href = data.init_point
       } else {
         console.error("No se recibio el punto de inicio", data)
@@ -65,7 +90,7 @@ const Carrito = () => {
             <div className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 rounded-3xl p-8 shadow-xl transition-colors duration-300">
               <h2 className="text-2xl font-bold mb-6 border-b border-gray-200 dark:border-white/10 pb-4">Tus Productos</h2>
               
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 mb-8">
                 {carrito.map((item, index) => (
                   // tarjeta individual de cada producto
                   <div key={index} className="flex justify-between items-center bg-gray-100 dark:bg-[#0f0f11] p-4 rounded-xl border border-gray-200 dark:border-white/5 transition-colors duration-300">
@@ -88,6 +113,75 @@ const Carrito = () => {
                 ))}
               </div>
 
+              {/* seccion dinamica de registro obligatorio antes de pagar */}
+              {mostrarFormulario && (
+                <div className="flex flex-col gap-3 mb-6 p-6 bg-gray-50 dark:bg-[#0f0f11] border border-gray-200 dark:border-white/10 rounded-2xl transition-all duration-300">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#5c8aff]">Datos de registro y envio</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Apellido"
+                      value={apellido}
+                      onChange={(e) => setApellido(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="DNI (Sin puntos)"
+                    value={dni}
+                    onChange={(e) => setDni(e.target.value)}
+                    className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Direccion de entrega"
+                    value={direccion}
+                    onChange={(e) => setDireccion(e.target.value)}
+                    className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email de contacto"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                  />
+                  
+                  {/* contenedor del input de contraseña con el boton de ver/ocultar integrado */}
+                  <div className="relative w-full flex items-center">
+                    <input
+                      type={verPassword ? "text" : "password"}
+                      placeholder="Elegi una contraseña para tu cuenta"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white px-4 py-2.5 pr-12 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setVerPassword(!verPassword)}
+                      className="absolute right-4 text-gray-400 hover:text-[#5c8aff] dark:hover:text-white transition-colors focus:outline-none cursor-pointer"
+                      title={verPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      {verPassword ? (
+                        // icono de ojo tachado (ocultar)
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
+                      ) : (
+                        // icono de ojo (mostrar)
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* seccion inferior con el total estimado */}
               <div className="mt-6 bg-gray-100 dark:bg-[#0f0f11] p-6 rounded-xl border border-gray-200 dark:border-white/10 flex justify-between items-center transition-colors duration-300">
                 <span className="text-xl text-gray-500 dark:text-gray-300 font-semibold">Total estimado</span>
@@ -102,12 +196,13 @@ const Carrito = () => {
                   Seguir comprando
                 </Link>
 
-                {/* boton conectado a la pasarela de pagos real */}
+                {/* boton adaptado que cambia de texto segun el paso */}
                 <button 
                   onClick={procesarPago}
-                  className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 w-full sm:w-auto"
+                  disabled={carrito.length === 0}
+                  className="bg-[#5c8aff] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-10 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 w-full sm:w-auto"
                 >
-                  Proceder al pago
+                  {mostrarFormulario ? 'Confirmar y pagar' : 'Proceder al pago'}
                 </button>
               </div>
             </div>
