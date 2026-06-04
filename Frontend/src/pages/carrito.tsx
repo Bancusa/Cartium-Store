@@ -14,16 +14,14 @@ const Carrito = () => {
   // funcion para mandar los fierros a la pasarela de pagos
   const procesarPago = async () => {
     try {
-      // buscamos el token de sesion guardado en el navegador
-      // const token = localStorage.getItem('tokenUsuario') // o como lo hayas nombrado al guardar
-
       const itemsMP = carrito.map(item => ({
         title: item.nombre,
         unit_price: Number(item.precio),
         quantity: 1 
       }))
 
-      const respuesta = await fetch('/api/pagos/create_preference', {
+      // pegamos directo al puerto cuatro mil del backend de express
+      const respuesta = await fetch('http://localhost:4000/api/pagos/create_preference', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: itemsMP })
@@ -32,9 +30,10 @@ const Carrito = () => {
       const data = await respuesta.json()
 
       if (data.init_point) {
+        // redirigir al usuario al entorno de pruebas de mercado pago
         window.location.href = data.init_point
       } else {
-        console.error("No se recibio el init_point del servidor", data)
+        console.error("No se recibio el punto de inicio", data)
       }
 
     } catch (error) {

@@ -6,32 +6,38 @@ export const crearPreferencia = async (req: Request, res: Response): Promise<voi
         const { items } = req.body;
 
         if (!items || items.length === 0) {
-            res.status(400).json({ message: 'El carrito está vacío' });
+            res.status(400).json({ message: 'El carrito esta vacio' });
             return;
         }
 
-        // Inicializar Mercado Pago
-        const client = new MercadoPagoConfig({ 
-            accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN as string 
-        });
+        const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
+        if (!token) {
+            res.status(500).json({ message: 'El token de mercado pago no esta configurado' });
+            return;
+        }
 
-        //Crear la preferencia
+        const client = new MercadoPagoConfig({ accessToken: token });
         const preference = new Preference(client);
 
+        const itemsProcesados = items.map((item: any) => ({
+            title: String(item.title),
+            unit_price: Number(item.unit_price),
+            quantity: Number(item.quantity || 1),
+            currency_id: 'ARS'
+        }));
+
+        // quitamos auto_return por completo para evitar que la api de mercado pago rebote el localhost
         const result = await preference.create({
             body: {
-                items: items,
-                // Le pasamos URLs con HTTPS real para pasar la validación estricta
+                items: itemsProcesados,
                 back_urls: {
-                    success: 'https://www.mercadopago.com.ar',
-                    failure: 'https://www.mercadopago.com.ar',
-                    pending: 'https://www.mercadopago.com.ar'
-                },
-                auto_return: 'approved',
+                    success: 'http://localhost:5173/pago-exitoso',
+                    failure: 'http://localhost:5173/pago-fallido',
+                    pending: 'http://localhost:5173/pago-pendiente'
+                }
             }
         });
 
-        // Le devolvemos el ID de esta orden al frontend
         res.status(200).json({ 
             id: result.id,
             init_point: result.init_point 

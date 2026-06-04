@@ -3,19 +3,18 @@ import { CartContext } from '../context/CartContext'
 import Navbar from '../components/Navbar'
 import Chatbot from '../components/Chatbot'
 
-// interfaz para el producto de la base de datos
 interface ProductoDB {
   id: number
   nombre: string
   descripcion: string
   precio: number
   stock: number
+  categoria: string
 }
 
 const Catalogo = () => {
   const context = useContext(CartContext)
   
-  // estados para los filtros y el menu desplegable
   const [busqueda, setBusqueda] = useState('')
   const [orden, setOrden] = useState('defecto')
   const [conStock, setConStock] = useState(false)
@@ -24,11 +23,14 @@ const Catalogo = () => {
   const [productos, setProductos] = useState<ProductoDB[]>([])
   const [cargando, setCargando] = useState(true)
   
-  // estado para controlar la pagina actual de la paginacion
+  // estado para controlar la etiqueta seleccionada por el usuario
+  const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string>('Todos')
+
   const [paginaActual, setPaginaActual] = useState(1)
-  
-  // limitamos la vista a 9 para formar una grilla perfecta de 3x3
   const productosPorPagina = 9
+
+  // lista de etiquetas fijas para el catalogo
+  const listaEtiquetas = ['Todos', 'Bancos', 'Mancuernas', 'Barras', 'Fitness', 'Discos']
 
   useEffect(() => {
     const obtenerProductos = async () => {
@@ -52,18 +54,29 @@ const Catalogo = () => {
     obtenerProductos()
   }, [])
 
-  // reseteamos a la pagina 1 cada vez que el usuario escribe un filtro nuevo
+  // Logica FILTROS
+  // reseteo de la pagina cada vez que se aplica un filtro
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPaginaActual(1)
-  }, [busqueda, orden, conStock])
+  }, [busqueda, orden, conStock, etiquetaSeleccionada])
 
+  // filtrado por texto del buscador principal
   let productosFiltrados = productos.filter(item =>
-    item.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    item.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+    item.descripcion.toLowerCase().includes(busqueda.toLowerCase())
   )
 
+  // filtrado por disponibilidad de stock
   if (conStock) {
     productosFiltrados = productosFiltrados.filter(item => item.stock > 0)
+  }
+
+  // filtrado por etiquetas de la base
+  if (etiquetaSeleccionada !== 'Todos') {
+    productosFiltrados = productosFiltrados.filter(item => 
+      item.categoria === etiquetaSeleccionada
+    )
   }
 
   if (orden === 'menor') {
@@ -74,12 +87,10 @@ const Catalogo = () => {
     productosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre))
   }
 
-  // calculamos los indices exactos para segmentar el array en paginas
   const indiceUltimoProducto = paginaActual * productosPorPagina
   const indicePrimerProducto = indiceUltimoProducto - productosPorPagina
   const productosPaginados = productosFiltrados.slice(indicePrimerProducto, indiceUltimoProducto)
 
-  // calculo de la cantidad total de paginas necesarias
   const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina)
 
   const cambiarPagina = (numeroPagina: number) => {
@@ -102,6 +113,26 @@ const Catalogo = () => {
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full bg-white dark:bg-[#1a1a1c] text-gray-900 dark:text-white pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] transition-all text-sm"
           />
+        </div>
+      </div>
+
+      {/* nuevo apartado de etiquetas adaptado para sidebar y movil */}
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-bold uppercase tracking-wider opacity-50">Categorias</span>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {listaEtiquetas.map((tag) => {
+            const activo = etiquetaSeleccionada === tag
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setEtiquetaSeleccionada(tag)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${activo ? 'bg-[#5c8aff] text-white border-[#5c8aff] shadow-md shadow-blue-500/10' : 'bg-gray-100 dark:bg-black/20 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-200 dark:hover:bg-[#232326]'}`}
+              >
+                {tag}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -227,7 +258,6 @@ const Catalogo = () => {
               )}
             </div>
 
-            {/* controles de paginacion inferiores */}
             {!cargando && totalPaginas > 1 && (
               <div className="flex justify-center items-center gap-2 mt-12 flex-wrap">
                 <button
