@@ -39,17 +39,18 @@ class ProductController {
             res.status(500).json({ message: 'Error interno del servidor' });
         }
     }
+    
     // crear nuevo producto en la base de datos
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { nombre, descripcion, precio, stock, categoria } = req.body;
+            const { nombre, descripcion, precio, stock, categoria, imagen } = req.body;
             const conexion = await conectarDB();
 
-            const query = 'INSERT INTO productos (nombre, descripcion, precio, stock, categoria) VALUES (?, ?, ?, ?, ?)';
-            await conexion.execute(query, [nombre, descripcion, precio, stock, categoria]);
+            // sumamos la columna imagen y el signo de pregunta correspondiente
+            const query = 'INSERT INTO productos (nombre, descripcion, precio, stock, categoria, imagen) VALUES (?, ?, ?, ?, ?, ?)';
+            await conexion.execute(query, [nombre, descripcion, precio, stock, categoria, imagen]);
 
             await conexion.end();
-
             res.status(201).json({ message: 'Producto creado con exito' });
         } catch (error) {
             console.error('Error al crear producto:', error);
@@ -61,11 +62,12 @@ class ProductController {
     update = async (req: Request, res: Response): Promise<void> => {
         try {
             const { id } = req.params;
-            const { nombre, descripcion, precio, stock, categoria } = req.body;
+            const { nombre, descripcion, precio, stock, categoria, imagen } = req.body;
             const conexion = await conectarDB();
 
-            const query = 'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, categoria = ? WHERE id = ?';
-            const [resultado]: any = await conexion.execute(query, [nombre, descripcion, precio, stock, categoria, id]);
+            // tambien agregamos imagen = ? en el update
+            const query = 'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, categoria = ?, imagen = ? WHERE id = ?';
+            const [resultado]: any = await conexion.execute(query, [nombre, descripcion, precio, stock, categoria, imagen, id]);
 
             await conexion.end();
 
@@ -73,7 +75,6 @@ class ProductController {
                 res.status(404).json({ message: 'Producto no encontrado' });
                 return;
             }
-
             res.status(200).json({ message: 'Producto actualizado con exito' });
         } catch (error) {
             console.error('Error al actualizar producto:', error);

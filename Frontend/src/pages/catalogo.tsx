@@ -11,6 +11,7 @@ interface ProductoDB {
   precio: number
   stock: number
   categoria: string
+  imagen?: string // campo nuevo para la url de la foto
 }
 
 const Catalogo = () => {
@@ -40,25 +41,27 @@ const Catalogo = () => {
 
   const listaEtiquetas = ['Todos', 'Bancos', 'Mancuernas', 'Barras', 'Fitness', 'Discos']
 
-  useEffect(() => {
-    const obtenerProductos = async () => {
-      try {
-        const respuesta = await fetch('/api/productos/getAll')
-        const datos = await respuesta.json()
+  const obtenerProductos = async () => {
+    try {
+      const respuesta = await fetch('/api/productos/getAll')
+      const datos = await respuesta.json()
 
-        if (Array.isArray(datos)) {
-          setProductos(datos)
-        } else {
-          console.error('El backend contesto pero no es un array:', datos)
-          setProductos([])
-        }
-      } catch (error) {
-        console.error('error al cargar los productos', error)
+      if (Array.isArray(datos)) {
+        setProductos(datos)
+      } else {
+        console.error('El backend contesto pero no es un array:', datos)
         setProductos([])
-      } finally {
-        setCargando(false)
       }
+    } catch (error) {
+      console.error('error al cargar los productos', error)
+      setProductos([])
+    } finally {
+      setCargando(false)
     }
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     obtenerProductos()
   }, [])
 
@@ -102,16 +105,20 @@ const Catalogo = () => {
   }
 
   const eliminarProducto = async (id: number) => {
+    const token = localStorage.getItem('token')
     const confirmar = window.confirm('Estas seguro de que queres borrar este producto para siempre')
     if (!confirmar) return
 
     try {
       const respuesta = await fetch(`http://localhost:4000/api/productos/eliminar/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       if (respuesta.ok) {
-        setProductos(productos.filter(p => p.id !== id))
+        obtenerProductos()
         alert('Producto eliminado')
       } else {
         alert('Hubo un problema al querer borrar el producto')
@@ -125,18 +132,21 @@ const Catalogo = () => {
   const guardarEdicion = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!productoEditando) return
+    const token = localStorage.getItem('token')
 
     try {
       const respuesta = await fetch(`http://localhost:4000/api/productos/editar/${productoEditando.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(productoEditando)
       })
 
       if (respuesta.ok) {
-        // actualizamos la lista en la pantalla sin recargar la pagina
-        setProductos(productos.map(p => p.id === productoEditando.id ? productoEditando : p))
         setProductoEditando(null) 
+        obtenerProductos()
         alert('Producto actualizado impecable')
       } else {
         alert('Hubo un error al actualizar el producto')
@@ -252,13 +262,15 @@ const Catalogo = () => {
                   </h1>
                 </div>
                 
-                <button 
-                  onClick={() => navigate('/nuevo-producto')}
-                  className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                  Añadir Producto
-                </button>
+                {userRole === 'admin' && (
+                  <button 
+                    onClick={() => navigate('/nuevo-producto')}
+                    className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                    Añadir Producto
+                  </button>
+                )}
               </div>
 
               {cargando ? (
@@ -276,7 +288,25 @@ const Catalogo = () => {
                       <div key={item.id} className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-xl dark:hover:bg-white/5 transition-all group flex flex-col justify-between duration-300">
                         <div>
                           <div className="w-full aspect-square bg-gray-100 dark:bg-[#0f0f11] rounded-2xl flex items-center justify-center border border-gray-200 dark:border-white/5 relative overflow-hidden mb-4 transition-colors duration-300">
-                            <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">Foto {item.nombre}</span>
+                          {item.imagen ? (
+                            <img 
+                            src={item.imagen} 
+                            alt={item.nombre} 
+                            className="w-full h-full object-cover rounded-2xl"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) {
+                                const span = document.createElement('span');
+                                span.className = "text-gray-400 dark:text-gray-600 text-sm font-medium";
+                                span.innerText = "Error al cargar foto";
+                                parent.appendChild(span);
+                              }
+                            }}
+                          />
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">Sin Foto</span>
+                          )}
                           </div>
 
                           <h3 className="text-xl font-bold tracking-tight mb-1">{item.nombre}</h3>
@@ -296,7 +326,7 @@ const Catalogo = () => {
                           {userRole === 'admin' ? (
                             <div className="flex gap-2 w-full mt-4">
                               <button 
-                                onClick={() => setProductoEditando(item)}
+                                onClick={() => setProductoEditando({ ...item, imagen: item.imagen || '' })}
                                 className="flex-1 bg-gray-100 dark:bg-[#232326] hover:bg-gray-200 dark:hover:bg-[#2a2a2e] text-gray-900 dark:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-gray-200 dark:border-white/5"
                               >
                                 Editar
@@ -389,6 +419,18 @@ const Catalogo = () => {
                   value={productoEditando.descripcion}
                   onChange={(e) => setProductoEditando({...productoEditando, descripcion: e.target.value})}
                   className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] resize-none h-24"
+                />
+              </div>
+
+              {/* campo nuevo de la imagen adentro del formulario de edicion */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-1 block">URL de la Imagen</label>
+                <input 
+                  type="text" 
+                  value={productoEditando.imagen || ''}
+                  onChange={(e) => setProductoEditando({...productoEditando, imagen: e.target.value})}
+                  placeholder="Pegar el link de la foto aca"
+                  className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff]"
                 />
               </div>
 

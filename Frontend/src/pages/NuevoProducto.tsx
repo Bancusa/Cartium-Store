@@ -11,7 +11,8 @@ const NuevoProducto = () => {
     descripcion: '',
     precio: 0,
     stock: 0,
-    categoria: 'Bancos'
+    categoria: 'Todos',
+    imagen: ''
   })
 
   // funcion para mandar los datos al backend
@@ -83,7 +84,16 @@ const NuevoProducto = () => {
                 placeholder="Detalles tecnicos del producto"
               />
             </div>
-
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2 block">URL de la Imagen</label>
+              <input 
+                type="text" 
+                value={formulario.imagen}
+                onChange={(e) => setFormulario({...formulario, imagen: e.target.value})}
+                className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-5 py-4 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] transition-all"
+                placeholder="Pegar el link de la foto aqui"
+              />
+            </div>
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="flex-1">
                 <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-2 block">Precio ($)</label>
