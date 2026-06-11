@@ -11,10 +11,7 @@ router.route("/:id").get(productController.getById);
 
 
 //Rutas del admin
-
 router.route("/create").post(verificarToken, esAdmin, productController.create);
-
-router.route("/update").put(verificarToken, esAdmin, productController.update);
-
-router.route("/delete/:id").delete(verificarToken, esAdmin, productController.delete);
+router.delete('/eliminar/:id',verificarToken, esAdmin, productController.delete)
+router.put('/editar/:id',verificarToken, esAdmin, productController.update)
 export default router

@@ -21,7 +21,7 @@ app.use('/api/productos', productsRouter);
 app.use('/api/usuarios', usersRoutes);
 app.use('/api/pagos', pagosRoutes);
 
-console.log("¿El servidor lee el token?:", process.env.MERCADOPAGO_ACCESS_TOKEN ? "SÍ, ESTÁ CARGADO 🗿" : "NO, ESTÁ VACÍO ⚠️");
+console.log("El servidor lee el token?:", process.env.MERCADOPAGO_ACCESS_TOKEN ? "SI, ESTA CARGADO 🗿" : "NO, ESTA VACIO");
 
 // levantamos el servidor en la ip local
 app.listen(PORT, () => {

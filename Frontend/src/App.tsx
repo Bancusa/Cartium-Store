@@ -4,6 +4,7 @@ import Catalogo from './pages/catalogo'
 import Carrito from './pages/carrito'
 import Auth from './pages/Auth'
 import Perfil from './pages/perfil'
+import NuevoProducto from './pages/NuevoProducto'
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/carrito" element={<Carrito />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/nuevo-producto" element={<NuevoProducto />} />
       </Routes>
     </BrowserRouter>
   )

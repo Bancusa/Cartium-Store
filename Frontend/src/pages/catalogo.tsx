@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from 'react'
 import { CartContext } from '../context/CartContext'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Chatbot from '../components/Chatbot'
 
@@ -14,6 +15,7 @@ interface ProductoDB {
 
 const Catalogo = () => {
   const context = useContext(CartContext)
+  const navigate = useNavigate()
   
   const [busqueda, setBusqueda] = useState('')
   const [orden, setOrden] = useState('defecto')
@@ -23,13 +25,19 @@ const Catalogo = () => {
   const [productos, setProductos] = useState<ProductoDB[]>([])
   const [cargando, setCargando] = useState(true)
   
-  // estado para controlar la etiqueta seleccionada por el usuario
   const [etiquetaSeleccionada, setEtiquetaSeleccionada] = useState<string>('Todos')
 
   const [paginaActual, setPaginaActual] = useState(1)
   const productosPorPagina = 9
 
-  // lista de etiquetas fijas para el catalogo
+  const [userRole] = useState<string>(() => {
+    const rolGuardado = localStorage.getItem('rol')
+    return rolGuardado ? rolGuardado : 'user'
+  })
+
+  // estado para manejar la ventanita de edicion
+  const [productoEditando, setProductoEditando] = useState<ProductoDB | null>(null)
+
   const listaEtiquetas = ['Todos', 'Bancos', 'Mancuernas', 'Barras', 'Fitness', 'Discos']
 
   useEffect(() => {
@@ -54,25 +62,20 @@ const Catalogo = () => {
     obtenerProductos()
   }, [])
 
-  // Logica FILTROS
-  // reseteo de la pagina cada vez que se aplica un filtro
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPaginaActual(1)
   }, [busqueda, orden, conStock, etiquetaSeleccionada])
 
-  // filtrado por texto del buscador principal
   let productosFiltrados = productos.filter(item =>
     item.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
     item.descripcion.toLowerCase().includes(busqueda.toLowerCase())
   )
 
-  // filtrado por disponibilidad de stock
   if (conStock) {
     productosFiltrados = productosFiltrados.filter(item => item.stock > 0)
   }
 
-  // filtrado por etiquetas de la base
   if (etiquetaSeleccionada !== 'Todos') {
     productosFiltrados = productosFiltrados.filter(item => 
       item.categoria === etiquetaSeleccionada
@@ -98,6 +101,51 @@ const Catalogo = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const eliminarProducto = async (id: number) => {
+    const confirmar = window.confirm('Estas seguro de que queres borrar este producto para siempre')
+    if (!confirmar) return
+
+    try {
+      const respuesta = await fetch(`http://localhost:4000/api/productos/eliminar/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (respuesta.ok) {
+        setProductos(productos.filter(p => p.id !== id))
+        alert('Producto eliminado')
+      } else {
+        alert('Hubo un problema al querer borrar el producto')
+      }
+    } catch (error) {
+      console.error('Error al borrar', error)
+    }
+  }
+
+  // funcion para guardar los cambios del producto en la base de datos
+  const guardarEdicion = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!productoEditando) return
+
+    try {
+      const respuesta = await fetch(`http://localhost:4000/api/productos/editar/${productoEditando.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productoEditando)
+      })
+
+      if (respuesta.ok) {
+        // actualizamos la lista en la pantalla sin recargar la pagina
+        setProductos(productos.map(p => p.id === productoEditando.id ? productoEditando : p))
+        setProductoEditando(null) 
+        alert('Producto actualizado impecable')
+      } else {
+        alert('Hubo un error al actualizar el producto')
+      }
+    } catch (error) {
+      console.error('Error al editar', error)
+    }
+  }
+
   const renderizarFiltros = () => (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -116,7 +164,6 @@ const Catalogo = () => {
         </div>
       </div>
 
-      {/* nuevo apartado de etiquetas adaptado para sidebar y movil */}
       <div className="flex flex-col gap-2">
         <span className="text-xs font-bold uppercase tracking-wider opacity-50">Categorias</span>
         <div className="flex flex-wrap gap-2 mt-1">
@@ -204,6 +251,14 @@ const Catalogo = () => {
                     Entrena a otro nivel
                   </h1>
                 </div>
+                
+                <button 
+                  onClick={() => navigate('/nuevo-producto')}
+                  className="bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                  Añadir Producto
+                </button>
               </div>
 
               {cargando ? (
@@ -238,18 +293,34 @@ const Catalogo = () => {
                             </span>
                           </div>
 
-                          <button
-                            disabled={item.stock === 0}
-                            className={`w-full font-bold py-3 mt-4 rounded-xl transition-all duration-200 shadow-lg ${item.stock === 0 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed shadow-none' : 'bg-[#5c8aff] text-white hover:bg-blue-600 hover:scale-[1.03] active:scale-95 shadow-blue-500/10 hover:shadow-blue-500/30 cursor-pointer'}`}
-                            onClick={() => context?.agregarAlCarrito({
-                              id: String(item.id),
-                              nombre: item.nombre,
-                              precio: item.precio
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            } as any)}
-                          >
-                            {item.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
-                          </button>
+                          {userRole === 'admin' ? (
+                            <div className="flex gap-2 w-full mt-4">
+                              <button 
+                                onClick={() => setProductoEditando(item)}
+                                className="flex-1 bg-gray-100 dark:bg-[#232326] hover:bg-gray-200 dark:hover:bg-[#2a2a2e] text-gray-900 dark:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-gray-200 dark:border-white/5"
+                              >
+                                Editar
+                              </button>
+                              <button 
+                                onClick={() => eliminarProducto(item.id)}
+                                className="flex-1 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-red-500/20 hover:border-red-500"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              disabled={item.stock === 0}
+                              className={`w-full font-bold py-3 mt-4 rounded-xl transition-all duration-200 shadow-lg ${item.stock === 0 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed shadow-none' : 'bg-[#5c8aff] text-white hover:bg-blue-600 hover:scale-[1.03] active:scale-95 shadow-blue-500/10 hover:shadow-blue-500/30 cursor-pointer'}`}
+                              onClick={() => context?.agregarAlCarrito({
+                                id: item.id,
+                                nombre: item.nombre,
+                                precio: item.precio
+                              })}
+                            >
+                              {item.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))
@@ -294,6 +365,75 @@ const Catalogo = () => {
 
         </div>
       </div>
+
+      {/* modal flotante para editar producto */}
+      {productoEditando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all">
+          <div className="bg-white dark:bg-[#1a1a1c] p-8 rounded-3xl w-full max-w-lg shadow-2xl border border-gray-200 dark:border-white/10">
+            <h3 className="text-2xl font-black mb-6">Editar Producto</h3>
+            
+            <form onSubmit={guardarEdicion} className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-1 block">Nombre</label>
+                <input 
+                  type="text" 
+                  value={productoEditando.nombre}
+                  onChange={(e) => setProductoEditando({...productoEditando, nombre: e.target.value})}
+                  className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-1 block">Descripcion</label>
+                <textarea 
+                  value={productoEditando.descripcion}
+                  onChange={(e) => setProductoEditando({...productoEditando, descripcion: e.target.value})}
+                  className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff] resize-none h-24"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-1 block">Precio ($)</label>
+                  <input 
+                    type="number" 
+                    value={productoEditando.precio}
+                    onChange={(e) => setProductoEditando({...productoEditando, precio: Number(e.target.value)})}
+                    className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-bold uppercase tracking-wider opacity-50 mb-1 block">Stock</label>
+                  <input 
+                    type="number" 
+                    value={productoEditando.stock}
+                    onChange={(e) => setProductoEditando({...productoEditando, stock: Number(e.target.value)})}
+                    className="w-full bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white px-4 py-3 rounded-xl border border-gray-200 dark:border-white/10 focus:outline-none focus:border-[#5c8aff]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setProductoEditando(null)}
+                  className="flex-1 bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 font-bold py-3 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-[#5c8aff] hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
       <Chatbot />
     </>
   )

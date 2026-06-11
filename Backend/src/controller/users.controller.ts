@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-
 import { conectarDB } from '../DB/database.js'; 
 
 // funcion register
@@ -82,7 +81,8 @@ export const loginUsuario = async (req: Request, res: Response): Promise<void> =
             nombre: usuario.nombre,
             apellido: usuario.apellido,
             dni: usuario.dni,
-            direccion: usuario.direccion
+            direccion: usuario.direccion,   
+            rol: usuario.rol
         });
 
     } catch (error) {

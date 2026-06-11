@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User } from 'lucide-react'
 import Navbar from '../components/Navbar'
 
 export default function Auth() {
   const [esLogin, setEsLogin] = useState(true)
+  const navigate = useNavigate()
   
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
@@ -19,7 +21,6 @@ export default function Auth() {
     setErrorMensaje(null)
     setCargando(true)
 
-    // Ajusta aca los endpoints segun tu ruteo de Express (usuarios o users)
     const urlBackend = esLogin 
       ? 'http://localhost:4000/api/usuarios/login' 
       : 'http://localhost:4000/api/usuarios/register'
@@ -39,6 +40,14 @@ export default function Auth() {
 
       if (respuesta.ok) {
         console.log("Funciono impecable 🗿", data)
+        console.log("Token recibido del backend:", data.token); // Si esto sale bien...
+    
+        localStorage.setItem('token', data.token); // ...esto DEBE guardarlo
+        localStorage.setItem('rol', data.rol);
+    
+        console.log("Token verificado en localStorage:", localStorage.getItem('token')); // Y esto debe confirmarlo
+    
+        navigate('/catalogo');
         
         if (esLogin) {
           localStorage.setItem('tokenUsuario', data.token || '')
@@ -47,6 +56,8 @@ export default function Auth() {
           localStorage.setItem('emailUsuario', email)
           localStorage.setItem('dniUsuario', data.dni || '')
           localStorage.setItem('direccionUsuario', data.direccion || '')
+          localStorage.setItem('rol', data.rol || '')
+          localStorage.setItem('token', data.token || '')
 
           const rutaDestino = localStorage.getItem('ultimaRuta') || '/catalogo'
           localStorage.removeItem('ultimaRuta')
