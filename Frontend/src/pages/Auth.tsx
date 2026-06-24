@@ -9,6 +9,7 @@ export default function Auth() {
   const navigate = useNavigate()
   
   const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   
@@ -27,7 +28,7 @@ export default function Auth() {
 
     const cuerpoPeticion = esLogin 
       ? { email, password } 
-      : { nombre, email, password }
+      : { nombre, apellido, email, password }
 
     try {
       const respuesta = await fetch(urlBackend, {
@@ -66,6 +67,7 @@ export default function Auth() {
           alert('¡Usuario registrado con éxito! Ya podés iniciar sesión.')
           setEsLogin(true)
           setNombre('')
+          setApellido('')
           setPassword('')
         }
       } else {
@@ -131,9 +133,17 @@ export default function Auth() {
                 <User className="absolute left-4 top-4 text-gray-400" size={18} />
                 <input
                   type="text"
-                  placeholder="Nombre completo"
+                  placeholder="Nombre"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
+                  className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                  required={!esLogin}
+                />
+                <input
+                  type="text"
+                  placeholder="Apellido"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
                   className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                   required={!esLogin}
                 />
