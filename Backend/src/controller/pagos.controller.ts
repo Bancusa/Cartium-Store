@@ -12,60 +12,54 @@ export const crearPreferencia = async (req: Request, res: Response, next: NextFu
     }
 
     const itemsPreferencia = items.map((prod: any) => {
-      // Tomamos el precio del producto (probá con prod.precio o prod.unit_price según cómo lo mandes)
       const precioOriginal = prod.precio !== undefined ? prod.precio : prod.unit_price;
-      
-      // Limpiamos el string por si viene con signos de pesos, puntos o comas
       const textoLimpio = String(precioOriginal || '0').replace(/[^0-9.-]+/g, '');
       let precioNumerico = parseFloat(textoLimpio);
 
-      // Si por alguna razón sigue dando NaN o es menor o igual a cero, le ponemos un valor por defecto (ej: 100) para que MP no lo rechace
       if (isNaN(precioNumerico) || precioNumerico <= 0) {
-        console.log(`⚠️ Alerta: El producto ${prod.nombre} vino con precio inválido (${precioOriginal}). Se asignó 100 por defecto.`);
-        precioNumerico = 100; 
+        console.log(`⚠️ Alerta: El producto ${prod.nombre} vino con precio invalido. Se asigno 100 por defecto.`);
+        precioNumerico = 100;
       }
 
       return {
         id: String(prod.id),
         title: String(prod.nombre || 'Producto sin nombre'),
-        unit_price: precioNumerico, // Ahora nos aseguramos un Number real y limpio
+        unit_price: precioNumerico,
         quantity: Number(prod.cantidad) || 1,
         currency_id: 'ARS'
       };
     });
 
-    // inicializamos el cliente directamente con el token del .env
     const clienteMP = new MercadoPagoConfig({ 
         accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '' 
     });
     
     const preference = new Preference(clienteMP);
     
-    const respuesta = await preference.create({
-      body: {
-        items: itemsPreferencia,
-        // Mandamos las propiedades usando comillas para asegurar que el formateador no te las mueva
-        "back_urls": {
-          "success": "http://localhost:5173/perfil",
-          "failure": "http://localhost:5173/carrito",
-          "pending": "http://localhost:5173/carrito"
-        },
-        "auto_return": "approved",
-        metadata: {
-          items_comprados: items.map((p: any) => ({ id: p.id, cantidad: p.cantidad || 1 }))
-        }
+    // Armamos el objeto de la peticion con un caspeo a 'any' para evitar que TypeScript se queje por las propiedades de las URLs
+    const cuerpoPeticion: any = {
+      items: itemsPreferencia,
+      backUrls: {
+        success: 'http://localhost:5173/perfil',
+        failure: 'http://localhost:5173/carrito',
+        pending: 'http://localhost:5173/carrito'
+      },
+      autoReturn: 'approved',
+      metadata: {
+        items_comprados: items.map((p: any) => ({ id: p.id, cantidad: p.cantidad || 1 }))
       }
-    });
+    };
+
+    const respuesta = await preference.create({ body: cuerpoPeticion });
 
     console.log("Preferencia generada de forma exitosa:", respuesta.id);
     
-    // Devolvemos una unica respuesta limpia para que el frente no tire ERR_HTTP_HEADERS_SENT
+    // Mandamos una sola respuesta limpia mapeando el init_point para tu carrito.tsx
     res.json({ 
       id: respuesta.id,
-      init_point: (respuesta as any).init_point || (respuesta as any).initPoint
+      init_point: respuesta.init_point 
     });
 
-    res.json({ id: respuesta.id });
   } catch (error) {
     console.error('error al crear la preferencia de mercado pago', error);
     next(error);
@@ -75,15 +69,12 @@ export const crearPreferencia = async (req: Request, res: Response, next: NextFu
 export const recibirWebhook = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { query } = req;
-    
     const tipoEvento = query.type || query['data.type'];
     
     if (tipoEvento === 'payment') {
       const paymentId = query.id || query['data.id'];
-      
       console.log(`notificacion de pago recibida ID ${paymentId}`);
 
-      // inicializamos el cliente tambien aca para el webhook
       const clienteMP = new MercadoPagoConfig({ 
           accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '' 
       });
