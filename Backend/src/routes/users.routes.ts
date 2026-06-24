@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { registrarUsuario, loginUsuario} from '../controller/users.controller.js';
+// Asegurate que coincida con el nombre exacto del controlador exportado
+import { registerUser, loginUsuario } from '../controller/users.controller.js';
 
 const router = Router();
 
-// Endpoint para registrar a cualquier persona (cliente o admin)
-router.post('/register', registrarUsuario);
+router.post('/register', registerUser);
 router.post('/login', loginUsuario);
+
 export default router;

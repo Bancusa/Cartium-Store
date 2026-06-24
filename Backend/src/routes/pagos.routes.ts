@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { crearPreferencia } from '../controller/pagos.controller.js';
+import { crearPreferencia, recibirWebhook } from '../controller/pagos.controller.js';
 
 const router = Router();
 
-// ruta post vinculada al controlador de mercado pago
-router.post('/create_preference', crearPreferencia);
+router.post('/crear-preferencia', crearPreferencia);
+
+// ESTA ES LA NUEVA RUTA PARA MERCADO PAGO
+router.post('/webhook', recibirWebhook);
 
 export default router;

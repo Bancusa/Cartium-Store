@@ -44,16 +44,16 @@ const Carrito = () => {
       }))
 
       // despachamos los productos junto con los datos del comprador recopilados con la clave
-      const respuesta = await fetch('http://localhost:4000/api/pagos/create_preference', {
+      const respuesta = await fetch('http://localhost:4000/api/pagos/crear-preferencia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          items: itemsMP,
-          comprador: { nombre, apellido, dni, direccion, email, password }
-        })
+        body: JSON.stringify({ items: itemsMP })
       })
 
       const data = await respuesta.json()
+      if (data.init_point) {
+        window.location.href = data.init_point
+      }
 
       if (data.init_point) {
         window.location.href = data.init_point

@@ -1,117 +1,107 @@
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+import conexion from '../DB/database.js';
 import bcrypt from 'bcrypt';
-import { conectarDB } from '../DB/database.js'; 
+import jwt from 'jsonwebtoken';
+import { registroUserSchema } from '../schemas/users.schema.js';
+import { z } from 'zod';
 
-// funcion register
-
-export const registrarUsuario = async (req: Request, res: Response): Promise<void> => {
+// 1. Funcion para registrar usuarios de forma segura
+export const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { nombre, apellido, email, password } = req.body;
+        // Validamos los datos de entrada con Zod
+        const datosValidados = registroUserSchema.safeParse(req.body);
         
-        console.log('Intento de registro recibido:', { nombre, apellido, email });
-
-        if (!email || !password) {
-            res.status(400).json({ message: 'El email y la contraseña son obligatorios' });
+        // si la validacion falla devolvemos los errores especificos
+        if (!datosValidados.success) {
+            res.status(400).json({
+                error: datosValidados.error.issues.map((err: z.ZodIssue) => err.message).join(', ')
+            });
             return;
         }
 
-        const passwordHasheada = await bcrypt.hash(password, 10);
-        const conexion = await conectarDB();
+        // Si paso la validacion, usamos los datos limpios
+        const { nombre, apellido, email, password, dni, direccion } = datosValidados.data;
 
-        const nombreFinal = nombre !== undefined && nombre !== '' ? nombre : null;
-        const apellidoFinal = apellido !== undefined && apellido !== '' ? apellido : null;
-        
-        const query = 'INSERT INTO users (nombre, apellido, email, password) VALUES (?, ?, ?, ?)';
-        await conexion.execute(query, [nombreFinal, apellidoFinal, email, passwordHasheada]);
-        await conexion.end();
+        // verificamos si el email ya existe en la base de datos
+        const [usuarioExistente]: any = await conexion.execute(
+            'SELECT id FROM users WHERE email = ?', 
+            [email]
+        );
 
-        console.log('Usuario insertado con exito en MySQL 🗿');
-        res.status(201).json({ message: '¡Usuario registrado con éxito!' });
-
-    } catch (error: any) {
-        console.error('Error al registrar usuario:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
-            res.status(409).json({ message: 'Este email ya está en uso, probá con otro' });
-        } else {
-            res.status(500).json({ message: 'Error interno del servidor' });
+        if (usuarioExistente.length > 0) {
+            res.status(400).json({ error: 'el email ya se encuentra registrado' });
+            return;
         }
+
+        // hasheamos la contrasenia de forma segura
+        const salt = await bcrypt.genSalt(10);
+        const passwordHasheada = await bcrypt.hash(password, salt);
+
+        // insertamos el nuevo usuario con rol por defecto 'user'
+        await conexion.execute(
+            'INSERT INTO users (nombre, apellido, email, password, dni, direccion, rol) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [nombre, apellido, email, passwordHasheada, dni, direccion, 'user']
+        );
+
+        res.status(201).json({ mensaje: 'usuario registrado de forma impecable' });
+
+    } catch (error) {
+        next(error); // se lo mandamos al escudo de errores global
     }
 };
 
-// funcion login
-
-export const loginUsuario = async (req: Request, res: Response): Promise<void> => {
+// 2. Funcion para loguear usuarios y emitir el JWT (La que estaba faltando)
+export const loginUsuario = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            res.status(400).json({ message: 'Email y contraseña son obligatorios' });
+            res.status(400).json({ error: 'el email y la contrasenia son mandatorios' });
             return;
         }
 
-        const conexion = await conectarDB();
-
-        const [filas]: any = await conexion.execute('SELECT * FROM users WHERE email = ?', [email]);
-        const usuario = filas[0];
-
-        await conexion.end();
-
-        if (!usuario) {
-            res.status(401).json({ message: 'Credenciales incorrectas' });
-            return;
-        }
-
-        const passwordCorrecta = await bcrypt.compare(password, usuario.password);
-
-        if (!passwordCorrecta) {
-            res.status(401).json({ message: 'Credenciales incorrectas' });
-            return;
-        }
-
-        const token = jwt.sign(
-            { id: usuario.id, rol: usuario.rol }, 
-            'mi_palabra_secreta', 
-            { expiresIn: '2h' } 
+        // Buscamos al usuario en la base de datos por su email
+        const [usuarios]: any = await conexion.execute(
+            'SELECT * FROM users WHERE email = ?',
+            [email]
         );
 
-        res.status(200).json({ 
-            message: 'Login exitoso',
-            token: token,
-            nombre: usuario.nombre,
-            apellido: usuario.apellido,
-            dni: usuario.dni,
-            direccion: usuario.direccion,   
-            rol: usuario.rol
+        if (usuarios.length === 0) {
+            res.status(400).json({ error: 'las credenciales ingresadas no son validas' });
+            return;
+        }
+
+        const usuario = usuarios[0];
+
+        // Comparamos la contrasenia ingresada con el hash guardado en MySQL
+        const contraseniaValida = await bcrypt.compare(password, usuario.password);
+        if (!contraseniaValida) {
+            res.status(400).json({ error: 'las credenciales ingresadas no son validas' });
+            return;
+        }
+
+        // Emitimos el token JWT usando la clave secreta del servidor
+        const jwtSecret = process.env.JWT_SECRET || 'clave_secreta_temporal_cartium';
+        const token = jwt.sign(
+            { id: usuario.id, email: usuario.email, rol: usuario.rol },
+            jwtSecret,
+            { expiresIn: '24h' }
+        );
+
+        // Devolvemos la info limpia para que el frontend la guarde en el localStorage
+        res.json({
+            mensaje: 'login exitoso',
+            token,
+            rol: usuario.rol,
+            usuario: {
+                id: usuario.id,
+                nombre: usuario.nombre,
+                apellido: usuario.apellido,
+                email: usuario.email
+            }
         });
 
     } catch (error) {
-        console.error('Error en el login:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
-    }
-};
-
-//funcion para actualizar datos desde el perfil
-export const actualizarPerfil = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { nombre, apellido, dni, direccion, email } = req.body;
-
-        if (!email) {
-            res.status(400).json({ message: 'El email es obligatorio para saber a quien actualizar' });
-            return;
-        }
-
-        const conexion = await conectarDB();
-
-        const query = 'UPDATE users SET nombre = ?, apellido = ?, dni = ?, direccion = ? WHERE email = ?';
-        await conexion.execute(query, [nombre, apellido, dni, direccion, email]);
-
-        await conexion.end();
-
-        res.status(200).json({ message: '¡Perfil actualizado en la base de datos!' });
-
-    } catch (error) {
-        console.error('Error al actualizar el perfil:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        next(error); // ataja el manejador global si explota algo
     }
 };

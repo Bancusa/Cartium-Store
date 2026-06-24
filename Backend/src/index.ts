@@ -4,6 +4,7 @@ import cors from 'cors';
 import productsRouter from './routes/products.routes.js';
 import usersRoutes from './routes/users.routes.js';
 import pagosRoutes from './routes/pagos.routes.js';
+import {manejadorErroresGlobal} from './middleware/error.middleware.js';
 
 const app = express();
 const PORT = 4000;
@@ -22,6 +23,8 @@ app.use('/api/usuarios', usersRoutes);
 app.use('/api/pagos', pagosRoutes);
 
 console.log("El servidor lee el token?:", process.env.MERCADOPAGO_ACCESS_TOKEN ? "SI, ESTA CARGADO 🗿" : "NO, ESTA VACIO");
+
+app.use(manejadorErroresGlobal);
 
 // levantamos el servidor en la ip local
 app.listen(PORT, () => {

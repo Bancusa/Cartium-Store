@@ -43,13 +43,15 @@ const Catalogo = () => {
 
   const obtenerProductos = async () => {
     try {
-      const respuesta = await fetch('/api/productos/getAll')
+      setCargando(true)
+      // agregamos la ruta absoluta del servidor de node
+      const respuesta = await fetch('http://localhost:4000/api/productos/getAll')
       const datos = await respuesta.json()
 
       if (Array.isArray(datos)) {
         setProductos(datos)
       } else {
-        console.error('El backend contesto pero no es un array:', datos)
+        console.error('El backend contesto pero no es un array', datos)
         setProductos([])
       }
     } catch (error) {
@@ -273,90 +275,103 @@ const Catalogo = () => {
                 )}
               </div>
 
-              {cargando ? (
-                <div className="text-center py-20 text-xl font-bold text-gray-500">
-                  Cargando catalogo
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {productosPaginados.length === 0 ? (
-                    <div className="col-span-full text-center py-10 text-gray-500 font-medium">
-                      No se encontraron productos con estos filtros
-                    </div>
-                  ) : (
-                    productosPaginados.map((item) => (
-                      <div key={item.id} className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-xl dark:hover:bg-white/5 transition-all group flex flex-col justify-between duration-300">
-                        <div>
-                          <div className="w-full aspect-square bg-gray-100 dark:bg-[#0f0f11] rounded-2xl flex items-center justify-center border border-gray-200 dark:border-white/5 relative overflow-hidden mb-4 transition-colors duration-300">
-                          {item.imagen ? (
-                            <img 
-                            src={item.imagen} 
-                            alt={item.nombre} 
-                            className="w-full h-full object-cover rounded-2xl"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                              const parent = (e.target as HTMLImageElement).parentElement;
-                              if (parent) {
-                                const span = document.createElement('span');
-                                span.className = "text-gray-400 dark:text-gray-600 text-sm font-medium";
-                                span.innerText = "Error al cargar foto";
-                                parent.appendChild(span);
-                              }
-                            }}
-                          />
-                          ) : (
-                            <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">Sin Foto</span>
-                          )}
-                          </div>
-
-                          <h3 className="text-xl font-bold tracking-tight mb-1">{item.nombre}</h3>
-                          <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.descripcion}</p>
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="text-2xl font-black text-[#5c8aff]">
-                              ${Number(item.precio).toLocaleString('es-AR')}
-                            </span>
-                            <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.stock === 0 ? 'text-gray-500 bg-gray-100 dark:bg-gray-800' : 'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30'}`}>
-                              Stock: {item.stock} u.
-                            </span>
-                          </div>
-
-                          {userRole === 'admin' ? (
-                            <div className="flex gap-2 w-full mt-4">
-                              <button 
-                                onClick={() => setProductoEditando({ ...item, imagen: item.imagen || '' })}
-                                className="flex-1 bg-gray-100 dark:bg-[#232326] hover:bg-gray-200 dark:hover:bg-[#2a2a2e] text-gray-900 dark:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-gray-200 dark:border-white/5"
-                              >
-                                Editar
-                              </button>
-                              <button 
-                                onClick={() => eliminarProducto(item.id)}
-                                className="flex-1 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-red-500/20 hover:border-red-500"
-                              >
-                                Eliminar
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              disabled={item.stock === 0}
-                              className={`w-full font-bold py-3 mt-4 rounded-xl transition-all duration-200 shadow-lg ${item.stock === 0 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed shadow-none' : 'bg-[#5c8aff] text-white hover:bg-blue-600 hover:scale-[1.03] active:scale-95 shadow-blue-500/10 hover:shadow-blue-500/30 cursor-pointer'}`}
-                              onClick={() => context?.agregarAlCarrito({
-                                id: item.id,
-                                nombre: item.nombre,
-                                precio: item.precio
-                              })}
-                            >
-                              {item.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
-                            </button>
-                          )}
-                        </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cargando ? (
+                  // Si esta cargando mostramos 6 Skeletons estructurados
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-3xl p-6 animate-pulse flex flex-col justify-between min-h-105">
+                      <div>
+                        <div className="w-full aspect-square bg-gray-200 dark:bg-[#0f0f11] rounded-2xl mb-4"></div>
+                        <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-lg w-2/3 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded-lg w-full mb-1"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-zinc-800 rounded-lg w-4/5 mb-4"></div>
                       </div>
-                    ))
-                  )}
-                </div>
-              )}
+                      <div>
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="h-8 bg-gray-200 dark:bg-zinc-800 rounded-lg w-1/3"></div>
+                          <div className="h-6 bg-gray-200 dark:bg-zinc-800 rounded-lg w-1/4"></div>
+                        </div>
+                        <div className="h-12 bg-gray-200 dark:bg-zinc-800 rounded-xl w-full mt-4"></div>
+                      </div>
+                    </div>
+                  ))
+                ) : productosPaginados.length === 0 ? (
+                  <div className="col-span-full text-center py-10 text-gray-500 font-medium">
+                    No se encontraron productos con estos filtros
+                  </div>
+                ) : (
+                  productosPaginados.map((item) => (
+                    <div key={item.id} className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-3xl p-6 hover:shadow-xl dark:hover:bg-white/5 transition-all group flex flex-col justify-between duration-300">
+                      <div>
+                        <div className="w-full aspect-square bg-gray-100 dark:bg-[#0f0f11] rounded-2xl flex items-center justify-center border border-gray-200 dark:border-white/5 relative overflow-hidden mb-4 transition-colors duration-300">
+                        {item.imagen ? (
+                          <img 
+                          src={item.imagen} 
+                          alt={item.nombre} 
+                          className="w-full h-full object-cover rounded-2xl"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const parent = (e.target as HTMLImageElement).parentElement;
+                            if (parent) {
+                              const span = document.createElement('span');
+                              span.className = "text-gray-400 dark:text-gray-600 text-sm font-medium";
+                              span.innerText = "Error al cargar foto";
+                              parent.appendChild(span);
+                            }
+                          }}
+                        />
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">Sin Foto</span>
+                        )}
+                        </div>
+
+                        <h3 className="text-xl font-bold tracking-tight mb-1">{item.nombre}</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-4">{item.descripcion}</p>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-2xl font-black text-[#5c8aff]">
+                            ${Number(item.precio).toLocaleString('es-AR')}
+                          </span>
+                          <span className={`text-xs font-bold px-2 py-1 rounded-md ${item.stock === 0 ? 'text-gray-500 bg-gray-100 dark:bg-gray-800' : 'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/30'}`}>
+                            Stock: {item.stock} u.
+                          </span>
+                        </div>
+
+                        {userRole === 'admin' ? (
+                          <div className="flex gap-2 w-full mt-4">
+                            <button 
+                              onClick={() => setProductoEditando({ ...item, imagen: item.imagen || '' })}
+                              className="flex-1 bg-gray-100 dark:bg-[#232326] hover:bg-gray-200 dark:hover:bg-[#2a2a2e] text-gray-900 dark:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-gray-200 dark:border-white/5"
+                            >
+                              Editar
+                            </button>
+                            <button 
+                              onClick={() => eliminarProducto(item.id)}
+                              className="flex-1 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer border border-red-500/20 hover:border-red-500"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            disabled={item.stock === 0}
+                            className={`w-full font-bold py-3 mt-4 rounded-xl transition-all duration-200 shadow-lg ${item.stock === 0 ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed shadow-none' : 'bg-[#5c8aff] text-white hover:bg-blue-600 hover:scale-[1.03] active:scale-95 shadow-blue-500/10 hover:shadow-blue-500/30 cursor-pointer'}`}
+                            onClick={() => context?.agregarAlCarrito({
+                              id: item.id,
+                              nombre: item.nombre,
+                              precio: item.precio
+                            })}
+                          >
+                            {item.stock === 0 ? 'Agotado' : 'Agregar al carrito'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             {!cargando && totalPaginas > 1 && (
