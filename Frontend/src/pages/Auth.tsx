@@ -40,29 +40,19 @@ export default function Auth() {
       const data = await respuesta.json()
 
       if (respuesta.ok) {
-        console.log("Funciono impecable 🗿", data)
-        console.log("Token recibido del backend:", data.token); // Si esto sale bien...
-    
-        localStorage.setItem('token', data.token); // ...esto DEBE guardarlo
-        localStorage.setItem('rol', data.rol);
-    
-        console.log("Token verificado en localStorage:", localStorage.getItem('token')); // Y esto debe confirmarlo
-    
-        navigate('/catalogo');
-        
         if (esLogin) {
-          localStorage.setItem('tokenUsuario', data.token || '')
-          localStorage.setItem('nombreUsuario', data.nombre || '')
-          localStorage.setItem('apellidoUsuario', data.apellido || '')
-          localStorage.setItem('emailUsuario', email)
-          localStorage.setItem('dniUsuario', data.dni || '')
-          localStorage.setItem('direccionUsuario', data.direccion || '')
-          localStorage.setItem('rol', data.rol || '')
+          // El backend devuelve los datos dentro de data usuario por eso los asignamos de esta forma
           localStorage.setItem('token', data.token || '')
+          localStorage.setItem('rol', data.rol || '')
+          localStorage.setItem('nombreUsuario', data.usuario?.nombre || '')
+          localStorage.setItem('apellidoUsuario', data.usuario?.apellido || '')
+          localStorage.setItem('emailUsuario', data.usuario?.email || '')
+          localStorage.setItem('dniUsuario', data.usuario?.dni || '')
+          localStorage.setItem('direccionUsuario', data.usuario?.direccion || '')
 
           const rutaDestino = localStorage.getItem('ultimaRuta') || '/catalogo'
           localStorage.removeItem('ultimaRuta')
-          window.location.href = rutaDestino
+          navigate(rutaDestino)
         } else {
           alert('¡Usuario registrado con éxito! Ya podés iniciar sesión.')
           setEsLogin(true)
@@ -71,21 +61,17 @@ export default function Auth() {
           setPassword('')
         }
       } else {
-        // Si el backend responde pero con un codigo de error (401, 404, 500)
         console.error("El backend rechazo la solicitud", data)
-        
         if (respuesta.status === 401) {
           setErrorMensaje('El correo ingresado no está registrado o la contraseña es incorrecta')
         } else {
           setErrorMensaje(data.message || 'Ocurrió un problema, revisá los datos')
         }
-        
         setTimeout(() => {
           setErrorMensaje(null)
         }, 5000)
       }
     } catch (error) {
-      // Este bloque solo se ejecuta si el servidor de Express esta apagado
       console.error("Error de conexion con el servidor", error)
       setErrorMensaje('No se pudo establecer conexión con el servidor principal. Intentá más tarde.')
     } finally {
@@ -129,24 +115,29 @@ export default function Auth() {
           <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
             
             {!esLogin && (
-              <div className="relative">
-                <User className="absolute left-4 top-4 text-gray-400" size={18} />
-                <input
-                  type="text"
-                  placeholder="Nombre"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
-                  required={!esLogin}
-                />
-                <input
-                  type="text"
-                  placeholder="Apellido"
-                  value={apellido}
-                  onChange={(e) => setApellido(e.target.value)}
-                  className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
-                  required={!esLogin}
-                />
+              <div className="relative flex flex-col gap-5">
+                <div className="relative">
+                  <User className="absolute left-4 top-4 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Nombre"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                    required={!esLogin}
+                  />
+                </div>
+                <div className="relative">
+                  <User className="absolute left-4 top-4 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Apellido"
+                    value={apellido}
+                    onChange={(e) => setApellido(e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                    required={!esLogin}
+                  />
+                </div>
               </div>
             )}
 
