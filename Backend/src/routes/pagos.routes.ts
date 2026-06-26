@@ -1,11 +1,10 @@
-import { Router } from 'express';
-import { crearPreferencia, recibirWebhook } from '../controller/pagos.controller.js';
+import { Router } from 'express'
+import { crearPreferencia, guardarFactura, obtenerFacturas } from '../controller/pagos.controller.js'
 
-const router = Router();
+const router = Router()
 
-router.post('/crear-preferencia', crearPreferencia);
+router.post('/crear-preferencia', crearPreferencia)
+router.post('/guardar-factura', guardarFactura)
+router.get('/facturas/:email', obtenerFacturas)
 
-// ESTA ES LA NUEVA RUTA PARA MERCADO PAGO
-router.post('/webhook', recibirWebhook);
-
-export default router;
+export default router

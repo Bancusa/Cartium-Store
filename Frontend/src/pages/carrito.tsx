@@ -30,11 +30,29 @@ const Carrito = () => {
     if (!tokenActivo) {
       localStorage.removeItem('token')
       localStorage.setItem('ultimaRuta', '/carrito')
+      // eslint-disable-next-line
       window.location.href = '/auth'
       return
     }
 
     try {
+      const emailActivo = localStorage.getItem('emailUsuario')
+      const fechaActual = new Date().toLocaleDateString('es-AR')
+
+      // disparamos el registro de la factura de forma asincrona
+      if (emailActivo) {
+        await fetch('http://localhost:4000/api/pagos/guardar-factura', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailActivo,
+            total: total,
+            estado: 'Procesando',
+            fecha: fechaActual
+          })
+        })
+      }
+
       const itemsMP = carrito.map(item => ({
         title: item.nombre,
         unit_price: Number(item.precio),
@@ -53,6 +71,7 @@ const Carrito = () => {
       const data = await respuesta.json()
 
       if (data.init_point) {
+        // eslint-disable-next-line
         window.location.href = data.init_point
       } else {
         console.error("Error desde el backend al generar la preferencia", data)

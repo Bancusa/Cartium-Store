@@ -32,7 +32,7 @@ const Navbar = () => {
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="Cartium Logo" className="h-8 w-auto object-contain" />
-            <span className="font-black text-xl tracking-wider">CARTIUM</span>
+            <span className="font-black text-xl tracking-wider">CARTIUM STORE</span>
           </Link>
         </div>
 

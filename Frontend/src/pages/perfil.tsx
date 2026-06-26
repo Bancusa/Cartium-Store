@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, MapPin, IdCard, Mail, FileText, Save, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
@@ -6,9 +6,11 @@ import Chatbot from '../components/Chatbot'
 
 export default function Perfil() {
   const [pestanaActiva, setPestanaActiva] = useState<'datos' | 'facturas'>('datos')
-  const [cargando] = useState(false)
+  const [cargando, setCargando] = useState(false)
+  // eslint-disable-next-line
+  const [facturas, setFacturas] = useState<any[]>([])
 
-  // Levantamos de forma dinamica todo lo que guardo el Auth al iniciar sesion
+  // levantamos de forma dinamica todo lo que guardo el auth al iniciar sesion
   const [datos, setDatos] = useState({
     nombre: localStorage.getItem('nombreUsuario') || '',
     apellido: localStorage.getItem('apellidoUsuario') || '',
@@ -17,21 +19,33 @@ export default function Perfil() {
     direccion: localStorage.getItem('direccionUsuario') || ''
   })
 
-  const facturasSimuladas = [
-    { id: 'FAC-001', fecha: '25/05/2026', total: 154000, estado: 'Pagado' },
-    { id: 'FAC-002', fecha: '12/05/2026', total: 85000, estado: 'Pagado' }
-  ]
+  // disparamos la lectura automatica al montar el componente
+  useEffect(() => {
+    const cargarFacturas = async () => {
+      const emailActivo = localStorage.getItem('emailUsuario')
+      if (!emailActivo) return
+
+      try {
+        const respuesta = await fetch(`http://localhost:4000/api/pagos/facturas/${emailActivo}`)
+        if (respuesta.ok) {
+          const data = await respuesta.json()
+          setFacturas(data)
+        }
+      } catch (error) {
+        console.error('fallo al recuperar el historial', error)
+      }
+    }
+
+    cargarFacturas()
+  }, [])
 
   const manejarCambio = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDatos({
-      ...datos,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    setDatos(prev => ({ ...prev, [name]: value }))
   }
 
-  // ENVIAR LOS DATOS NUEVOS AL BACKEND
   const guardarCambios = async () => {
-    // rescatamos la llave maestra del almacenamiento
+    setCargando(true)
     const emailActivo = localStorage.getItem('emailUsuario')
     
     try {
@@ -59,155 +73,161 @@ export default function Perfil() {
         window.location.reload()
       } else {
         const data = await respuesta.json()
-        console.error("el servidor reboto la solicitud", data)
+        console.error('el servidor reboto la solicitud', data)
       }
     } catch (error) {
-      console.error("fallo estructural en la conexion", error)
+      console.error('fallo estructural en la conexion', error)
+    } finally {
+      setCargando(false)
     }
   }
 
   return (
     <>
       <Navbar />
-
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f11] py-10 px-4 md:px-8 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0f0f11] text-gray-900 dark:text-white p-4 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto mt-6">
           
-          <Link to="/catalogo" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#5c8aff] transition-colors mb-6 font-bold">
-            <ArrowLeft size={16} /> Volver al catálogo
-          </Link>
+          <div className="flex items-center gap-4 mb-6">
+            <Link to="/catalogo" className="p-2 rounded-xl bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-all">
+              <ArrowLeft size={20} />
+            </Link>
+            <h1 className="text-3xl font-black tracking-tight">Mi Perfil</h1>
+          </div>
 
-          <div className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-xl transition-colors duration-300">
-            
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-100 dark:border-white/5 pb-6 mb-8">
-              <div>
-                <h1 className="text-3xl font-black text-gray-900 dark:text-white">Mi Perfil</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestioná tu información personal y revisá tus comprobantes de compra</p>
-              </div>
+          <div className="flex bg-gray-100 dark:bg-black/20 p-1 rounded-xl mb-8 max-w-md">
+            <button
+              type="button"
+              onClick={() => setPestanaActiva('datos')}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${pestanaActiva === 'datos' ? 'bg-white dark:bg-[#28282a] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+            >
+              Mis Datos
+            </button>
+            <button
+              type="button"
+              onClick={() => setPestanaActiva('facturas')}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${pestanaActiva === 'facturas' ? 'bg-white dark:bg-[#28282a] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+            >
+              Mis Facturas
+            </button>
+          </div>
 
-              <div className="flex bg-gray-100 dark:bg-black/20 p-1.5 rounded-2xl w-full md:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setPestanaActiva('datos')}
-                  className={`flex-1 md:flex-none px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${pestanaActiva === 'datos' ? 'bg-[#5c8aff] text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  <User size={16} /> Mis Datos
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPestanaActiva('facturas')}
-                  className={`flex-1 md:flex-none px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${pestanaActiva === 'facturas' ? 'bg-[#5c8aff] text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  <FileText size={16} /> Facturas
-                </button>
-              </div>
-            </div>
-
-            {pestanaActiva === 'datos' && (
-              <form onSubmit={guardarCambios} className="flex flex-col gap-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
+          {pestanaActiva === 'datos' ? (
+            <div className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 rounded-3xl p-8 shadow-xl transition-colors duration-300">
+              <h2 className="text-xl font-bold mb-6 border-b border-gray-200 dark:border-white/10 pb-4">Información Personal</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="relative">
+                  <label className="text-xs font-bold text-gray-400 block mb-2">Nombre</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-4 text-gray-400 dark:text-gray-500" size={18} />
+                    <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
                     <input
                       type="text"
                       name="nombre"
-                      placeholder="Nombre"
                       value={datos.nombre}
                       onChange={manejarCambio}
                       className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
-                      required
                     />
                   </div>
+                </div>
 
+                <div className="relative">
+                  <label className="text-xs font-bold text-gray-400 block mb-2">Apellido</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-4 text-gray-400 dark:text-gray-500" size={18} />
+                    <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
                     <input
                       type="text"
                       name="apellido"
-                      placeholder="Apellido/s"
                       value={datos.apellido}
                       onChange={manejarCambio}
                       className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                     />
                   </div>
+                </div>
 
+                <div className="relative">
+                  <label className="text-xs font-bold text-gray-400 block mb-2">DNI</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-4 text-gray-400 dark:text-gray-500" size={18} />
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Correo electrónico"
-                      value={datos.email}
-                      className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none opacity-50 cursor-not-allowed"
-                      disabled
-                    />
-                  </div>
-
-                  <div className="relative">
-                    <IdCard className="absolute left-4 top-4 text-gray-400 dark:text-gray-500" size={18} />
+                    <IdCard className="absolute left-4 top-3.5 text-gray-400" size={18} />
                     <input
                       type="text"
                       name="dni"
-                      placeholder="DNI / Documento"
                       value={datos.dni}
                       onChange={manejarCambio}
                       className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                     />
                   </div>
+                </div>
 
-                  <div className="relative md:col-span-2">
-                    <MapPin className="absolute left-4 top-4 text-gray-400 dark:text-gray-500" size={18} />
+                <div className="relative">
+                  <label className="text-xs font-bold text-gray-400 block mb-2">Dirección</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-3.5 text-gray-400" size={18} />
                     <input
                       type="text"
                       name="direccion"
-                      placeholder="Dirección de envío completa (Calle, Altura, Piso, Ciudad)"
                       value={datos.direccion}
                       onChange={manejarCambio}
                       className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                     />
                   </div>
-
                 </div>
 
-                <div className="flex justify-end mt-4">
-                  <button 
-                    type="submit" 
-                    disabled={cargando}
-                    className="bg-[#4e7ef0] hover:bg-blue-600 disabled:bg-gray-500 text-white py-3.5 px-6 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer"
-                  >
-                    <Save size={18} /> {cargando ? 'Guardando...' : 'Guardar Datos'}
-                  </button>
+                <div className="relative md:col-span-2">
+                  <label className="text-xs font-bold text-gray-400 block mb-2">Correo Electrónico</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-3.5 text-gray-400" size={18} />
+                    <input
+                      type="email"
+                      value={datos.email}
+                      disabled
+                      className="w-full bg-gray-200/50 dark:bg-white/5 border border-gray-200 dark:border-white/5 text-gray-400 rounded-2xl py-3.5 pl-12 pr-4 text-sm cursor-not-allowed"
+                    />
+                  </div>
                 </div>
-              </form>
-            )}
+              </div>
 
-            {pestanaActiva === 'facturas' && (
-              <div className="flex flex-col gap-4">
-                <div className="bg-blue-50 dark:bg-blue-500/5 border border-blue-200/50 dark:border-blue-500/10 p-4 rounded-2xl text-sm text-blue-700 dark:text-blue-400 font-medium">
-                  🚀 Espacio preparado para la automatizacion automatica de tus compras y descarga de PDF
-                </div>
-
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={guardarCambios}
+                  disabled={cargando}
+                  className="bg-[#4e7ef0] hover:bg-blue-600 disabled:bg-gray-400 text-white py-3 px-8 rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2 hover:scale-[1.02] active:scale-95 cursor-pointer"
+                >
+                  <Save size={18} />
+                  {cargando ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 rounded-3xl p-8 shadow-xl transition-colors duration-300">
+              <h2 className="text-xl font-bold mb-6 border-b border-gray-200 dark:border-white/10 pb-4">Historial de Compras</h2>
+              
+              {facturas.length === 0 ? (
+                <p className="text-center text-gray-500 dark:text-gray-400 py-8">No tenés facturas registradas todavía</p>
+              ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-black/10 rounded-xl">
+                    <thead className="bg-gray-100 dark:bg-[#0f0f11] text-gray-700 dark:text-gray-300 text-xs font-black uppercase tracking-wider rounded-xl">
                       <tr>
-                        <th className="px-4 py-3 rounded-l-xl">Nro Comprobante</th>
+                        <th className="px-4 py-3 rounded-l-xl">Factura</th>
                         <th className="px-4 py-3">Fecha</th>
                         <th className="px-4 py-3">Total</th>
                         <th className="px-4 py-3 rounded-r-xl">Estado</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                      {facturasSimuladas.map((fac) => (
+                      {facturas.map((fac) => (
                         <tr key={fac.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
                           <td className="px-4 py-4 font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <FileText size={16} className="text-gray-400" /> {fac.id}
+                            <FileText size={16} className="text-gray-400" /> FAC-{fac.id}
                           </td>
                           <td className="px-4 py-4">{fac.fecha}</td>
-                          <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">${fac.total.toLocaleString()}</td>
+                          <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
+                            ${Number(fac.total).toLocaleString('es-AR')}
+                          </td>
                           <td className="px-4 py-4">
-                            <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 text-xs px-2.5 py-1 rounded-full font-bold">
+                            <span className="bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs px-2.5 py-1 rounded-full font-bold">
                               {fac.estado}
                             </span>
                           </td>
@@ -216,13 +236,12 @@ export default function Perfil() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          )}
 
-          </div>
         </div>
       </div>
-
       <Chatbot />
     </>
   )

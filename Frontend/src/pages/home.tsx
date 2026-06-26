@@ -1,4 +1,4 @@
-import { type LucideIcon, ShieldCheck, Zap, Leaf } from 'lucide-react';
+import { type LucideIcon, ShieldCheck, Zap, Leaf, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Chatbot from '../components/Chatbot';
@@ -120,12 +120,12 @@ export default function App() {
         </div>
       </section>
 
-    {/* 5 footer */}
+      {/* 5 footer */}
       <footer className="w-full border-t border-gray-200 dark:border-white/10 pt-16 pb-8 px-6 mt-auto transition-colors duration-300">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center">
           
           {/* columna 1 logo nuevo y descripcion */}
-          <div className="flex flex-col items-center gap-4 mb-12">
+          <div className="flex flex-col items-center gap-4 mb-6">
             <div className="flex items-center gap-3 justify-center">
               <img 
                 src={logo} 
@@ -137,6 +137,15 @@ export default function App() {
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-sm transition-colors duration-300">
               Equipamiento profesional para alcanzar tus metas.
             </p>
+          </div>
+
+          {/* bloque de contacto agregado */}
+          <div className="flex items-center gap-2 mb-12 text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
+            <Mail size={16} className="text-[#4e7ef0]" />
+            <span className="font-semibold">Contacto:</span>
+            <a href="mailto:contacto@cartiumstore.com" className="hover:text-[#4e7ef0] transition-colors">
+              cartiumstore656@gmail.com
+            </a>
           </div>
 
           {/* copyright */}

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
-import conexion from '../DB/database.js';
+import conexion from '../DB/database.js'
 
 export const crearPreferencia = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -104,3 +104,33 @@ export const recibirWebhook = async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 };
+
+export const guardarFactura = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email, total, estado, fecha } = req.body
+
+        await conexion.execute(
+            'INSERT INTO facturas (email_usuario, fecha, total, estado) VALUES (?, ?, ?, ?)',
+            [email, fecha, total, estado]
+        )
+
+        res.status(201).json({ mensaje: 'factura registrada en el sistema' })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const obtenerFacturas = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { email } = req.params
+
+        const [facturas]: any = await conexion.execute(
+            'SELECT * FROM facturas WHERE email_usuario = ? ORDER BY id DESC',
+            [email]
+        )
+
+        res.json(facturas)
+    } catch (error) {
+        next(error)
+    }
+}
