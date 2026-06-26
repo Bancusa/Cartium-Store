@@ -22,12 +22,14 @@ const Carrito = () => {
   }, [carrito])
 
   const procesarPago = async () => {
-    const tokenActivo = localStorage.getItem('token')
+    const tokenBruto = localStorage.getItem('token')
+    
+    // Filtro: Si es nulo, vacio o dice "undefined", lo descartamos
+    const tokenActivo = (tokenBruto && tokenBruto !== 'undefined' && tokenBruto !== 'null' && tokenBruto.trim() !== '') ? tokenBruto : null
 
     if (!tokenActivo) {
-      // marcamos el inicio del flujo
+      localStorage.removeItem('token')
       localStorage.setItem('ultimaRuta', '/carrito')
-      localStorage.setItem('pagoPendiente', 'true')
       window.location.href = '/auth'
       return
     }
@@ -53,11 +55,11 @@ const Carrito = () => {
       if (data.init_point) {
         window.location.href = data.init_point
       } else {
-        console.error("No se recibio el punto de inicio", data)
+        console.error("Error desde el backend al generar la preferencia", data)
       }
 
     } catch (error) {
-      console.error("Error al conectar con la pasarela de pagos", error)
+      console.error("Fallo de red al conectar con la pasarela", error)
     }
   }
 

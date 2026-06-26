@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, ArrowRight, User, MapPin, CreditCard } from 'lucide-react'
 import Navbar from '../components/Navbar'
 
 export default function Auth() {
   const [esLogin, setEsLogin] = useState(true)
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [dni, setDni] = useState('')
+  const [direccion, setDireccion] = useState('')
   
   const [mostrarContrasena, setMostrarContrasena] = useState(false)
   const [errorMensaje, setErrorMensaje] = useState<string | null>(null)
@@ -26,9 +27,10 @@ export default function Auth() {
       ? 'http://localhost:4000/api/usuarios/login' 
       : 'http://localhost:4000/api/usuarios/register'
 
+    // armamos el paquete segun la accion
     const cuerpoPeticion = esLogin 
       ? { email, password } 
-      : { nombre, apellido, email, password }
+      : { nombre, apellido, email, password, dni, direccion }
 
     try {
       const respuesta = await fetch(urlBackend, {
@@ -41,7 +43,7 @@ export default function Auth() {
 
       if (respuesta.ok) {
         if (esLogin) {
-          // El backend devuelve los datos dentro de data usuario por eso los asignamos de esta forma
+          // guardamos las variables del login
           localStorage.setItem('token', data.token || '')
           localStorage.setItem('rol', data.rol || '')
           localStorage.setItem('nombreUsuario', data.usuario?.nombre || '')
@@ -52,27 +54,48 @@ export default function Auth() {
 
           const rutaDestino = localStorage.getItem('ultimaRuta') || '/catalogo'
           localStorage.removeItem('ultimaRuta')
-          navigate(rutaDestino)
+          window.location.href = rutaDestino
         } else {
-          alert('¡Usuario registrado con éxito! Ya podés iniciar sesión.')
-          setEsLogin(true)
-          setNombre('')
-          setApellido('')
-          setPassword('')
+          // auto login despues de registrar
+          const loginMudo = await fetch('http://localhost:4000/api/usuarios/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          })
+          
+          const dataLogin = await loginMudo.json()
+
+          if (loginMudo.ok) {
+            localStorage.setItem('token', dataLogin.token || '')
+            localStorage.setItem('rol', dataLogin.rol || '')
+            localStorage.setItem('nombreUsuario', dataLogin.usuario?.nombre || '')
+            localStorage.setItem('apellidoUsuario', dataLogin.usuario?.apellido || '')
+            localStorage.setItem('emailUsuario', dataLogin.usuario?.email || '')
+            localStorage.setItem('dniUsuario', dataLogin.usuario?.dni || '')
+            localStorage.setItem('direccionUsuario', dataLogin.usuario?.direccion || '')
+
+            const rutaDestino = localStorage.getItem('ultimaRuta') || '/catalogo'
+            localStorage.removeItem('ultimaRuta')
+            window.location.href = rutaDestino
+          } else {
+            // si por alguna anomalia falla el auto login lo mandamos a la pestaña normal
+            alert('Cuenta creada pero hubo un fallo al iniciar sesion automatico')
+            setEsLogin(true)
+          }
         }
       } else {
-        console.error("El backend rechazo la solicitud", data)
+        console.error("el backend rechazo la solicitud", data)
         if (respuesta.status === 401) {
           setErrorMensaje('El correo ingresado no está registrado o la contraseña es incorrecta')
         } else {
-          setErrorMensaje(data.message || 'Ocurrió un problema, revisá los datos')
+          setErrorMensaje(data.error || data.message || 'Ocurrió un problema revisá los datos')
         }
         setTimeout(() => {
           setErrorMensaje(null)
         }, 5000)
       }
     } catch (error) {
-      console.error("Error de conexion con el servidor", error)
+      console.error("error de conexion con el servidor", error)
       setErrorMensaje('No se pudo establecer conexión con el servidor principal. Intentá más tarde.')
     } finally {
       setCargando(false)
@@ -83,7 +106,7 @@ export default function Auth() {
     <>
       <Navbar />
 
-      <div className="min-h-[calc(screen-64px)] bg-gray-50 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
+      <div className="min-h-[calc(100vh-64px)] bg-gray-50 dark:bg-[#0f0f11] flex items-center justify-center p-4 transition-colors duration-300">
         <div className="max-w-md w-full bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/5 rounded-3xl p-8 shadow-xl transition-colors duration-300">
           
           <div className="flex bg-gray-100 dark:bg-black/20 p-1 rounded-xl mb-8">
@@ -115,7 +138,7 @@ export default function Auth() {
           <form onSubmit={manejarEnvio} className="flex flex-col gap-5">
             
             {!esLogin && (
-              <div className="relative flex flex-col gap-5">
+              <div className="flex flex-col gap-5">
                 <div className="relative">
                   <User className="absolute left-4 top-4 text-gray-400" size={18} />
                   <input
@@ -134,6 +157,28 @@ export default function Auth() {
                     placeholder="Apellido"
                     value={apellido}
                     onChange={(e) => setApellido(e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                    required={!esLogin}
+                  />
+                </div>
+                <div className="relative">
+                  <CreditCard className="absolute left-4 top-4 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="DNI"
+                    value={dni}
+                    onChange={(e) => setDni(e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
+                    required={!esLogin}
+                  />
+                </div>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Dirección"
+                    value={direccion}
+                    onChange={(e) => setDireccion(e.target.value)}
                     className="w-full bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-[#4e7ef0] transition-all"
                     required={!esLogin}
                   />

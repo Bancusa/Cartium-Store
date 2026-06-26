@@ -6,7 +6,7 @@ import Chatbot from '../components/Chatbot'
 
 export default function Perfil() {
   const [pestanaActiva, setPestanaActiva] = useState<'datos' | 'facturas'>('datos')
-  const [cargando, setCargando] = useState(false)
+  const [cargando] = useState(false)
 
   // Levantamos de forma dinamica todo lo que guardo el Auth al iniciar sesion
   const [datos, setDatos] = useState({
@@ -30,36 +30,39 @@ export default function Perfil() {
   }
 
   // ENVIAR LOS DATOS NUEVOS AL BACKEND
-  const guardarCambios = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setCargando(true)
-
+  const guardarCambios = async () => {
+    // rescatamos la llave maestra del almacenamiento
+    const emailActivo = localStorage.getItem('emailUsuario')
+    
     try {
-      // cambiamos users por usuarios para que coincida con el backend
-      const respuesta = await fetch('http://localhost:4000/api/usuarios/actualizar-perfil', {
+      const respuesta = await fetch('http://localhost:4000/api/usuarios/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datos)
+        body: JSON.stringify({
+          nombre: datos.nombre,       
+          apellido: datos.apellido,
+          direccion: datos.direccion,
+          dni: datos.dni,
+          email: emailActivo    
+        })
       })
 
-      const resultado = await respuesta.json()
-
       if (respuesta.ok) {
+        alert('¡Datos actualizados con éxito!')
+        
+        // actualizamos la memoria completa para que la app lea los datos frescos
         localStorage.setItem('nombreUsuario', datos.nombre)
         localStorage.setItem('apellidoUsuario', datos.apellido)
-        localStorage.setItem('dniUsuario', datos.dni)
         localStorage.setItem('direccionUsuario', datos.direccion)
+        localStorage.setItem('dniUsuario', datos.dni)
         
-        alert('¡Datos guardados con éxito en la base de datos! 🗿')
         window.location.reload()
       } else {
-        alert(resultado.message || 'Error al guardar en el servidor')
+        const data = await respuesta.json()
+        console.error("el servidor reboto la solicitud", data)
       }
     } catch (error) {
-      console.error('Error de conexion:', error)
-      alert('No se pudo conectar con el servidor para guardar los datos')
-    } finally {
-      setCargando(false)
+      console.error("fallo estructural en la conexion", error)
     }
   }
 
